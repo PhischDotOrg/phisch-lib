@@ -1,0 +1,7 @@
+add_subdirectory(compat)
+# add_subdirectory(devices)
+# add_subdirectory(dma)
+add_subdirectory(gpio)
+# add_subdirectory(spi)
+# add_subdirectory(timer)
+add_subdirectory(uart)
