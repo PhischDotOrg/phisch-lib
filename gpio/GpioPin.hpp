@@ -21,10 +21,7 @@ public:
     } mode_t;
     
         Pin(const uint8_t p_pin) : m_pin(p_pin) {};
-    virtual ~Pin() {};
-    
-    virtual int set(const mode_t p_mode) const = 0;
-    virtual int get(mode_t &p_mode) const = 0;
+    ~Pin() {};
 
 protected:
     const uint8_t m_pin;
@@ -53,8 +50,8 @@ public:
     PinT(EngineT * const p_engine, const uint8_t p_pin);
     ~PinT();
 
-    virtual int set(const mode_t p_mode) const;
-    virtual int get(mode_t &p_mode) const;
+    int set(const mode_t p_mode) const;
+    int get(mode_t &p_mode) const;
 
     template<typename Mode_e, typename Termination_e, typename Function_e>
     int enable(Mode_e p_mode, const Termination_e p_termination, const Function_e p_function) const {
