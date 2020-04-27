@@ -12,11 +12,9 @@ extern "C" {
 size_t
 strlen(const char * const s) {
     size_t len = 0;
-    
-    if (s != NULL) {
-        while (s[len] != '\0') {
-            len++;
-        }
+
+    while (s[len] != '\0') {
+        len++;
     }
     
     return len;

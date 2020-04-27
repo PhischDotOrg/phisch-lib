@@ -24,6 +24,21 @@ public:
     void printf(const char * const p_fmt, ...) const;
 };
 
+/*******************************************************************************
+ *
+ ******************************************************************************/
+template<>
+class DeviceT<void> {
+public:
+    DeviceT(void * const /* p_access */) {};
+    ~DeviceT(void) {}
+
+    void printf(const char * const /* p_fmt */, ...) const {};
+};
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
 typedef DeviceT<uart::UartAccess> UartDevice;
 
 } /* namespace uart */

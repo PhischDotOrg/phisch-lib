@@ -37,6 +37,9 @@ DeviceT<AccessT>::printf(const char * const p_fmt, ...) const {
     va_end(va);
 }
 
-template class DeviceT<uart::UartAccess>;
+/*******************************************************************************
+ *
+ ******************************************************************************/
+// template class DeviceT<uart::UartAccess>;
 
 } /* namespace uart */
