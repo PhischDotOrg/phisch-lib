@@ -69,7 +69,7 @@ GenericUsbDevice::getStatus(const uint8_t /* p_len */) const {
  *
  ******************************************************************************/
 void
-GenericUsbDevice::setConfiguration(const uint8_t p_configuration) const {
+GenericUsbDevice::setConfiguration(const uint8_t /* p_configuration */) const {
     USB_PRINTF("GenericUsbDevice::%s(): USB Configuration = %x\r\n", __func__, p_configuration);
 
     // FIXME Actually enable configuration here.
