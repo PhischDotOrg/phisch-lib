@@ -9,6 +9,7 @@
 
 namespace usb {
 
+#if 0
 /*******************************************************************************
  *
  ******************************************************************************/
@@ -40,6 +41,7 @@ UsbHwOutEndpoint::unregisterEndpointCallback(UsbOutEndpoint &p_endpointCallback)
     assert(this->m_endpointCallback == &p_endpointCallback);
     this->m_endpointCallback = NULL;
 }
+#endif
 
 /*******************************************************************************
  *

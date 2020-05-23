@@ -10,37 +10,37 @@
 
 namespace usb {
 
+    class UsbConfiguration;
     class UsbHwDevice;
-
-    class DefaultControlPipe;
+    class UsbControlPipe;
 
 /*******************************************************************************
  *
  ******************************************************************************/
-class GenericUsbDevice {
-    friend class DefaultControlPipe;
+class UsbDevice {
+    friend class UsbControlPipe;
 
 private:
     UsbHwDevice &m_hwDevice;
-    DefaultControlPipe &m_ctrlPipe;
+    UsbControlPipe &m_ctrlPipe;
 
     const uint8_t                               m_maxConfigurations;
     const ::usb::UsbDeviceDescriptor_t          m_deviceDescriptor;
     const ::usb::UsbDeviceQualifierDescriptor_t m_deviceQualifierDescriptor;
-    const void * const                          m_configurationDescriptor;
-    const size_t                                m_configurationDescriptorSize;
+    ::usb::UsbConfiguration &                   m_configuration;
     const ::usb::UsbStringDescriptors_t &       m_stringDescriptors;
 
 public:
-    GenericUsbDevice(UsbHwDevice &p_hwDevice, DefaultControlPipe &p_ctrlPipe,
-      const void * const p_configurationDescriptor, size_t p_configurationDescriptorSize,
+    UsbDevice(UsbHwDevice &p_hwDevice, UsbControlPipe &p_ctrlPipe,
+      UsbConfiguration &p_configuration,
       const ::usb::UsbStringDescriptors_t &p_stringDescriptors);
 
-    virtual ~GenericUsbDevice();
+    virtual ~UsbDevice();
 
-    void setAddress(const uint8_t p_address) const;
-    void setConfiguration(const uint8_t p_configuration) const;
-    void getStatus(const uint8_t p_len) const;
+    void    setAddress(const uint8_t p_address) const;
+    void    setConfiguration(const uint8_t p_configuration) const;
+    uint8_t getConfiguration(void) const;
+    void    getStatus(const uint8_t p_len) const;
 };
 
 /*******************************************************************************

@@ -3,27 +3,34 @@
 -*/
 
 #include <usb/UsbOutEndpoint.hpp>
+#include <usb/UsbHwOutEndpoint.hpp>
 #include <usb/UsbControlPipe.hpp>
-#include <usb/UsbHwCtrlOutEndpoint.hpp>
 #include <assert.h>
 #include <stddef.h>
 
 namespace usb {
 
+#if 0
 /*******************************************************************************
  *
  ******************************************************************************/
-UsbOutEndpoint::UsbOutEndpoint(UsbHwOutEndpoint &p_hwEndpoint)
-  : m_hwEndpoint(p_hwEndpoint) {
-      this->m_hwEndpoint.registerEndpointCallback(*this);
-}
+UsbOutEndpoint::UsbOutEndpoint(uint32_t * const p_buffer, const size_t p_lenInBytes)
+  : m_dataStageBuffer {
+      /* .m_buffer = */ p_buffer,
+      /* .m_numWords = */ p_lenInBytes / sizeof(uint32_t)
+  }
+{
 
+}
+#endif
+
+#if 0
 /*******************************************************************************
  *
  ******************************************************************************/
 UsbOutEndpoint::~UsbOutEndpoint() {
-    this->m_hwEndpoint.unregisterEndpointCallback(*this);
 }
+#endif
 
 /*******************************************************************************
  *

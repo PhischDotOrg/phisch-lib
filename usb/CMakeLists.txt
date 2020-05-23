@@ -7,15 +7,12 @@
 #*******************************************************************************
 set(TARGET_NAME usb)
 set(TARGET_SRC
-    DefaultControlPipe.cpp
-    GenericUsbDevice.cpp
+    UsbBulkOutEndpoint.cpp
     UsbControlPipe.cpp
-    UsbCtrlInEndpoint.cpp
     UsbCtrlOutEndpoint.cpp
-    UsbHwInEndpoint.cpp
+    UsbDevice.cpp
     UsbHwOutEndpoint.cpp
-    UsbHwCtrlOutEndpoint.cpp
-    UsbInEndpoint.cpp
+    UsbInterface.cpp
     UsbOutEndpoint.cpp
 )
 add_library(${TARGET_NAME} ${TARGET_SRC})

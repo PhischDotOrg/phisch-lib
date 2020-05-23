@@ -8,21 +8,58 @@
 #include <usb/UsbTypes.hpp>
 #include <stdint.h>
 
+#include <usb/InEndpointViaSTM32F4.hpp>
+
 namespace usb {
 
 /*******************************************************************************
  *
  ******************************************************************************/
-class UsbHwInEndpoint {
-protected:
+class UsbHwBulkInEndpoint {
+public:
+    UsbHwBulkInEndpoint(void) {
+    }
+
+    virtual ~UsbHwBulkInEndpoint() {
+    }
+
+    virtual void enable(void) const = 0;
+    virtual void disable(void) const = 0;
+
+    virtual void write(const uint8_t * const p_data, const size_t p_length) const = 0;
+};
+
+#if 0
+/*******************************************************************************
+ *
+ ******************************************************************************/
+template<class UsbHwInEndpointT>
+class UsbHwCtrlInEndpointT {
+private:
+    const UsbHwInEndpointT &m_hwEndpoint;
 
 public:
-            UsbHwInEndpoint(void);
-    virtual ~UsbHwInEndpoint();
+    constexpr UsbHwCtrlInEndpointT(const UsbHwInEndpointT &p_hwEndpoint) : m_hwEndpoint(p_hwEndpoint) {
+    }
 
-    virtual void write(const uint8_t * const p_data, const size_t p_dataLength, const size_t p_txLength) = 0;
-    virtual void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_len) = 0;
+    ~UsbHwCtrlInEndpointT() {
+    }
+
+    constexpr void write(const uint8_t * const p_data, const size_t p_length) const {
+        this->m_hwEndpoint.write(p_data, p_length);
+    }
+
+    constexpr void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_len) const {
+        this->m_hwEndpoint.writeString(p_string, p_len);
+    }
 };
+
+namespace stm32f4 {
+    class CtrlInEndpointViaSTM32F4;
+}
+
+typedef UsbHwCtrlInEndpointT<stm32f4::CtrlInEndpointViaSTM32F4> UsbHwCtrlInEndpoint;
+#endif
 
 /*******************************************************************************
  *

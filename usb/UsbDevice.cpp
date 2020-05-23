@@ -2,17 +2,20 @@
  * $Copyright$
 -*/
 
-#include <usb/GenericUsbDevice.hpp>
-#include <usb/DefaultControlPipe.hpp>
+#include <usb/UsbDevice.hpp>
+#include <usb/UsbControlPipe.hpp>
 #include <usb/UsbHwDevice.hpp>
+#include <usb/UsbConfiguration.hpp>
+
+#include <assert.h>
 
 namespace usb {
 
 /*******************************************************************************
  *
  ******************************************************************************/
-GenericUsbDevice::GenericUsbDevice(UsbHwDevice &p_hwDevice, DefaultControlPipe &p_ctrlPipe,
-  const void * const p_configurationDescriptor, size_t p_configurationDescriptorSize,
+UsbDevice::UsbDevice(UsbHwDevice &p_hwDevice, UsbControlPipe &p_ctrlPipe,
+  UsbConfiguration &p_configuration,
   const ::usb::UsbStringDescriptors_t &p_stringDescriptors)
   : m_hwDevice(p_hwDevice),
     m_ctrlPipe(p_ctrlPipe),
@@ -21,9 +24,9 @@ GenericUsbDevice::GenericUsbDevice(UsbHwDevice &p_hwDevice, DefaultControlPipe &
         sizeof(m_deviceDescriptor),                                     /* m_bLength */
         ::usb::UsbDescriptorTypeId_t::e_Device,                         /* m_bDescriptorType */
         { 0x00, 0x02 },                                                 /* m_bLength */
-        ::usb::UsbInterfaceClass_e::e_UsbInterface_VendorSpecific,      /* m_bDeviceClass */
-        0x00,                                                           /* m_bDeviceSubClass */
-        0x00,                                                           /* m_bDeviceProtocol */
+        ::usb::UsbInterfaceClass_e::e_UsbInterface_Misc_EFh,            /* m_bDeviceClass */
+        0x02,                                                           /* m_bDeviceSubClass */
+        0x01,                                                           /* m_bDeviceProtocol */
         static_cast<uint8_t>(p_hwDevice.getDeviceSpeed() == ::usb::UsbHwDevice::DeviceSpeed_e::e_UsbFullSpeed ? 64 : 0), /* m_bMaxPacketSize0 */
         { 0xad, 0xde },                                                 /* m_idVendor */
         { 0xef, 0xbe },                                                 /* m_idProduct */
@@ -34,8 +37,7 @@ GenericUsbDevice::GenericUsbDevice(UsbHwDevice &p_hwDevice, DefaultControlPipe &
         m_maxConfigurations                                             /* e_bNumConfigurations */
     },
     m_deviceQualifierDescriptor(m_deviceDescriptor),
-    m_configurationDescriptor(p_configurationDescriptor),
-    m_configurationDescriptorSize(p_configurationDescriptorSize),
+    m_configuration(p_configuration),
     m_stringDescriptors(p_stringDescriptors)
 {
   m_ctrlPipe.registerUsbDevice(*this);
@@ -44,7 +46,7 @@ GenericUsbDevice::GenericUsbDevice(UsbHwDevice &p_hwDevice, DefaultControlPipe &
 /*******************************************************************************
  *
  ******************************************************************************/
-GenericUsbDevice::~GenericUsbDevice() {
+UsbDevice::~UsbDevice() {
   m_ctrlPipe.unregisterUsbDevice(*this);
 }
 
@@ -52,7 +54,7 @@ GenericUsbDevice::~GenericUsbDevice() {
  *
  ******************************************************************************/
 void
-GenericUsbDevice::setAddress(const uint8_t p_address) const {
+UsbDevice::setAddress(const uint8_t p_address) const {
   this->m_hwDevice.setAddress(p_address);
 }
 
@@ -60,7 +62,10 @@ GenericUsbDevice::setAddress(const uint8_t p_address) const {
  *
  ******************************************************************************/
 void
-GenericUsbDevice::getStatus(const uint8_t /* p_len */) const {
+UsbDevice::getStatus(const uint8_t /* p_len */) const {
+    /* TODO UsbDevice::getStatus() is not implemented */
+    assert(false);
+
     // assert(this->m_inEndpoints[0] != NULL);
     // this->m_inEndpoints[0]->write(reinterpret_cast<const uint8_t *>(&this->m_deviceStatus), sizeof(this->m_deviceStatus), p_len);
 }
@@ -69,11 +74,25 @@ GenericUsbDevice::getStatus(const uint8_t /* p_len */) const {
  *
  ******************************************************************************/
 void
-GenericUsbDevice::setConfiguration(const uint8_t /* p_configuration */) const {
-    USB_PRINTF("GenericUsbDevice::%s(): USB Configuration = %x\r\n", __func__, p_configuration);
+UsbDevice::setConfiguration(const uint8_t p_configuration) const {
+    USB_PRINTF("UsbDevice::%s(): USB Configuration = %x\r\n", __func__, p_configuration);
 
-    // FIXME Actually enable configuration here.
-    // this->m_outEndpoints[p_configuration]->enable();
+    /* TODO This piece of code only supports a single USB configuration per Device. Does it make to assert() for the right configuration number here? */
+    if (p_configuration != 0) {
+        this->m_configuration.enable();
+    } else {
+        this->m_configuration.disable();
+    }
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+uint8_t
+UsbDevice::getConfiguration(void) const {
+  uint8_t cfg = this->m_configuration.isEnabled() ? 1 : 0;
+
+  return cfg;
 }
 
 /*******************************************************************************

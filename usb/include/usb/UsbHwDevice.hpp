@@ -14,7 +14,21 @@ namespace usb {
  ******************************************************************************/
 class UsbHwDevice {
 public:
+    /**
+     * @brief USB Device Speed.
+     * 
+     * Enum to define the list of valid USB Device Speeds in the Hardware-specific
+     * layer.
+     */
     enum DeviceSpeed_e {
+        /* FIXME USB High Speed not yet supported. */
+#if 0
+        /**  @brief USB High Speed. */ 
+        e_UsbHighSpeed = 0x0,
+#endif
+        /** @brief USB Speed is unknown. */
+        e_UsbUnknown   = 0x1,   
+        /** @brief USB Full Speed. */
         e_UsbFullSpeed = 0x3
     };
 

@@ -10,29 +10,52 @@
 
 namespace usb {
 
-class UsbControlPipe;
+    class UsbControlPipe;
 
 /*******************************************************************************
  *
  ******************************************************************************/
-class UsbCtrlOutEndpoint : public UsbOutEndpoint {
+    namespace stm32f4 {
+        class BulkOutEndpointViaSTM32F4;
+        class CtrlOutEndpointViaSTM32F4;
+    }
+
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+template<typename UsbHwCtrlOutEndpointT>
+class UsbCtrlOutEndpointT {
 private:
-    UsbControlPipe *    m_ctrlPipe;
-    UsbSetupPacket_t    m_setupPacket;
+    UsbHwCtrlOutEndpointT & m_hwEndpoint;
+    UsbControlPipe *        m_ctrlPipe;
 
 public:
-            UsbCtrlOutEndpoint(UsbHwOutEndpoint &p_hwEndpoint);
-    virtual ~UsbCtrlOutEndpoint();
+    UsbCtrlOutEndpointT(UsbHwCtrlOutEndpointT &p_hwEndpoint) : m_hwEndpoint(p_hwEndpoint) {
+        m_hwEndpoint.registerEndpointCallback(*this);
+    };
 
-    void registerCtrlPipe(UsbControlPipe &p_ctrlPipe);
-    void unregisterCtrlPipe(UsbControlPipe &p_ctrlPipe);
+    ~UsbCtrlOutEndpointT() {
+        m_hwEndpoint.unregisterEndpointCallback(*this);
+    }
 
-    virtual void rxData(const uint32_t p_rxData);
-    virtual void transferComplete(void);
-    virtual void setupComplete(const void * p_setupData, const size_t p_length);
+    void registerCtrlPipe(UsbControlPipe &p_ctrlPipe) {
+        assert(this->m_ctrlPipe == nullptr);
+        this->m_ctrlPipe = &p_ctrlPipe;
+    }
 
-    virtual void *getSetupPacketBuffer(size_t * const p_length);
+    void unregisterCtrlPipe(UsbControlPipe &p_ctrlPipe) {
+        assert(this->m_ctrlPipe == &p_ctrlPipe);
+        this->m_ctrlPipe = nullptr;
+    }
+
+    void transferComplete(const size_t p_numBytes) const;
+    void setupComplete(const UsbSetupPacket_t &p_setupPacket) const;
+
+    void setDataStageBuffer(uint32_t * const p_data, const size_t p_length) const;
 };
+
+typedef UsbCtrlOutEndpointT<::usb::stm32f4::CtrlOutEndpointViaSTM32F4> UsbCtrlOutEndpoint;
 
 /*******************************************************************************
  *
