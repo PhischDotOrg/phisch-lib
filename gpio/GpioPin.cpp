@@ -14,24 +14,7 @@ namespace gpio {
  *
  ******************************************************************************/
 template<typename EngineT>
-PinT<EngineT>::PinT(EngineT * const p_engine, const uint8_t p_pin)
-  : Pin(p_pin), m_engine(p_engine) {
-
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-template<typename EngineT>
-PinT<EngineT>::~PinT() {
-
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-template<typename EngineT>
-int
+constexpr int
 PinT<EngineT>::set(const mode_t p_mode) const {
     int rc;
     switch (p_mode) {
@@ -46,11 +29,7 @@ PinT<EngineT>::set(const mode_t p_mode) const {
         break;
     default:
         rc = EINVAL;
-        goto out;
     }
-    if (rc != 0)
-        rc = EIO;
-out:
     return (rc);
 }
 
@@ -58,21 +37,19 @@ out:
  *
  ******************************************************************************/
 template<typename EngineT>
-int
+constexpr int
 PinT<EngineT>::get(mode_t &p_mode) const {
     vector_t vector;
 
     int rc = this->m_engine->read(vector);
-    if (rc != 0) {
-        rc = EIO;
-        goto out;
+    if (!rc) {
+        if ((vector & (1 << this->m_pin)) != 0) {
+            p_mode = On;
+        } else {
+            p_mode = Off;
+        }
     }
 
-    if ((vector & (1 << this->m_pin)) != 0)
-        p_mode = On;
-    else
-        p_mode = Off;
-out:
     return (rc);
 }
 

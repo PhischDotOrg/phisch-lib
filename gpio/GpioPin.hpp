@@ -47,18 +47,24 @@ private:
     typedef typename EngineT::vector_t vector_t;
 
 public:
-    PinT(EngineT * const p_engine, const uint8_t p_pin);
-    ~PinT();
+    constexpr PinT(EngineT * const p_engine, const uint8_t p_pin)
+      : Pin(p_pin), m_engine(p_engine) {
 
-    int set(const mode_t p_mode) const;
-    int get(mode_t &p_mode) const;
+    }
+
+    ~PinT() {
+
+    }
+
+    constexpr int set(const mode_t p_mode) const;
+    constexpr int get(mode_t &p_mode) const;
 
     template<typename Mode_e, typename Termination_e, typename Function_e>
-    int enable(Mode_e p_mode, const Termination_e p_termination, const Function_e p_function) const {
+    constexpr int enable(Mode_e p_mode, const Termination_e p_termination, const Function_e p_function) const {
         return this->m_engine->enable(this->m_pin, p_mode, p_termination, p_function);
     };
 
-    int disable(void) const {
+    constexpr int disable(void) const {
         return this->m_engine->disable(this->m_pin);
     };
 }; /* class PinT */
