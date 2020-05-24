@@ -77,9 +77,12 @@ UsbControlPipe::decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket, const
         this->m_usbDevice->setConfiguration(p_setupPacket.m_wValue);
         this->write(NULL, 0);
         break;
-    case e_GetStatus:
-        this->m_usbDevice->getStatus(p_setupPacket.m_wLength);
-        break;
+    case e_GetStatus: {
+        assert(p_setupPacket.m_wLength == 2);
+
+        const ::usb::UsbDeviceStatus_t status = this->m_usbDevice->getStatus();
+        this->write(reinterpret_cast<const uint8_t *>(&status), p_setupPacket.m_wLength);
+        } break;
     case e_GetConfiguration:
         assert(p_setupPacket.m_wValue == 0);
         assert(p_setupPacket.m_wIndex == 0);

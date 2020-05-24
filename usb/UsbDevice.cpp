@@ -38,7 +38,8 @@ UsbDevice::UsbDevice(UsbHwDevice &p_hwDevice, UsbControlPipe &p_ctrlPipe,
     },
     m_deviceQualifierDescriptor(m_deviceDescriptor),
     m_configuration(p_configuration),
-    m_stringDescriptors(p_stringDescriptors)
+    m_stringDescriptors(p_stringDescriptors),
+    m_deviceStatus { 1 }
 {
   m_ctrlPipe.registerUsbDevice(*this);
 }
@@ -61,17 +62,13 @@ UsbDevice::setAddress(const uint8_t p_address) const {
 /*******************************************************************************
  *
  ******************************************************************************/
-void
-UsbDevice::getStatus(const uint8_t /* p_len */) const {
-    /* TODO UsbDevice::getStatus() is not implemented */
-    assert(false);
-
-    // assert(this->m_inEndpoints[0] != NULL);
-    // this->m_inEndpoints[0]->write(reinterpret_cast<const uint8_t *>(&this->m_deviceStatus), sizeof(this->m_deviceStatus), p_len);
+const ::usb::UsbDeviceStatus_t &    
+UsbDevice::getStatus(void) const {
+    return this->m_deviceStatus;
 }
 
 /*******************************************************************************
- *
+ *:
  ******************************************************************************/
 void
 UsbDevice::setConfiguration(const uint8_t p_configuration) const {

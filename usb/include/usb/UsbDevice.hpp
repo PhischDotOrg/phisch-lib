@@ -29,6 +29,7 @@ private:
     const ::usb::UsbDeviceQualifierDescriptor_t m_deviceQualifierDescriptor;
     ::usb::UsbConfiguration &                   m_configuration;
     const ::usb::UsbStringDescriptors_t &       m_stringDescriptors;
+    const ::usb::UsbDeviceStatus_t              m_deviceStatus;
 
 public:
     UsbDevice(UsbHwDevice &p_hwDevice, UsbControlPipe &p_ctrlPipe,
@@ -40,7 +41,7 @@ public:
     void    setAddress(const uint8_t p_address) const;
     void    setConfiguration(const uint8_t p_configuration) const;
     uint8_t getConfiguration(void) const;
-    void    getStatus(const uint8_t p_len) const;
+    const ::usb::UsbDeviceStatus_t &    getStatus(void) const;
 };
 
 /*******************************************************************************

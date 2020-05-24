@@ -602,6 +602,32 @@ struct UsbInterfaceAssociationDescriptor_s {
 static_assert(sizeof(struct UsbInterfaceAssociationDescriptor_s) == 8u);
 #endif /* defined(__cplusplus) */
 
+/***************************************************************************//**
+ * \brief "Get Status" Response for USB 2.0 Devices
+ *
+ * This structure defines the Response to a _Get Status_ Control Command Response
+ * for USB Devices as per
+ * Figure #9-4
+ * "Information Returned by a GetStatus() Request to a Device"
+ * of the
+ * "Universal Serial Bus Specification"
+ * Revision 2.0 from April 27, 2000
+ *****************************************************************************/
+union UsbDeviceStatus_u {
+    uint16_t        m_status;
+    struct {
+        uint16_t    m_selfPowered   : 1;
+        uint16_t    m_remoteWakeup  : 1;
+        uint16_t    m_reserved      : 14;
+    } m_bitfield;
+} __attribute__((packed));
+
+typedef union UsbDeviceStatus_u UsbDeviceStatus_t;
+
+#if defined(__cplusplus)
+static_assert(sizeof(UsbDeviceStatus_t) == 2u);
+#endif /* defined(__cplusplus) */
+
 /*******************************************************************************
  *
  ******************************************************************************/
