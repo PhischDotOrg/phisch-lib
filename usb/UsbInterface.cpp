@@ -97,7 +97,7 @@ UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket, const 
     case e_GetLineCoding:
         assert(p_setupPacket.m_wValue == 0);
         assert(p_setupPacket.m_wIndex == 0); /* FIXME Should be same as UsbInterface::m_interfaceNo */
-        assert(p_setupPacket.m_wLength == sizeof(struct UsbCdcLineCoding_s));
+        assert(p_setupPacket.m_wLength == 7);
         assert(p_setupPacket.m_bmRequestType == 0xA1);
 
         this->m_defaultCtrlPipe.write(reinterpret_cast<const uint8_t *>(&usbCdcLineCoding), sizeof(struct UsbCdcLineCoding_s));
