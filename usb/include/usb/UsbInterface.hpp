@@ -18,9 +18,11 @@ class UsbControlPipe;
  ******************************************************************************/
 class UsbInterface {
 public:
-    virtual void    enable(void) const = 0;
+    virtual         ~UsbInterface() {};
+
+    virtual void    enable(const UsbControlPipe &p_defaultCtrlPipe) = 0;
     virtual void    disable(void) const = 0;
-    virtual void    handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket, const void * const p_data, const size_t p_length) const = 0;
+    virtual void    handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) const = 0;
 };
 
 /*******************************************************************************
@@ -28,17 +30,23 @@ public:
  ******************************************************************************/
 class UsbVcpInterface : public UsbInterface {
 private:
-    UsbControlPipe &        m_defaultCtrlPipe;
+    const UsbControlPipe *  m_defaultCtrlPipe;
     UsbBulkOutEndpoint &    m_outEndpoint;
     UsbBulkInEndpoint &     m_inEndpoint;
 
 public:
-    UsbVcpInterface(UsbControlPipe &p_defaultCtrlPipe, UsbBulkOutEndpoint &p_outEndpoint, UsbBulkInEndpoint &p_inEndpoint);
-    virtual ~UsbVcpInterface();
+    UsbVcpInterface(UsbBulkOutEndpoint &p_outEndpoint, UsbBulkInEndpoint &p_inEndpoint)
+      : m_outEndpoint(p_outEndpoint), m_inEndpoint(p_inEndpoint) {
+    }
 
-    void    enable(void) const override;
+    virtual ~UsbVcpInterface() override {
+
+    }
+
+    void    enable(const UsbControlPipe &p_defaultCtrlPipe) override;
     void    disable(void) const override;
-    void    handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket, const void * const p_data, const size_t p_length) const override;
+
+    void    handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) const override;
 };
 
 /*******************************************************************************

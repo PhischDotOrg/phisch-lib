@@ -27,46 +27,27 @@ extern "C" {
 
 namespace usb {
 
-
 /*******************************************************************************
  *
  ******************************************************************************/
-UsbControlPipe::UsbControlPipe(UsbCtrlInEndpoint &p_inEndpoint, UsbCtrlOutEndpoint &p_outEndpoint)
-: m_inEndpoint(p_inEndpoint), m_outEndpoint(p_outEndpoint),
-    m_usbDevice(nullptr), m_usbInterface(nullptr)
-{
-    this->m_outEndpoint.registerCtrlPipe(*this);
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-UsbControlPipe::~UsbControlPipe() {
-    this->m_outEndpoint.unregisterCtrlPipe(*this);
+void
+UsbControlPipe::decodeInterfaceRequest(const UsbSetupPacket_t &p_setupPacket) const {
+    assert(this->m_activeConfiguration != nullptr);
+    this->m_activeConfiguration->handleCtrlRequest(p_setupPacket);
 }
 
 /*******************************************************************************
  *
  ******************************************************************************/
 void
-UsbControlPipe::decodeInterfaceRequest(const UsbSetupPacket_t &p_setupPacket, const void * const p_data, const size_t p_length) const {
-    assert(this->m_usbInterface != NULL);
-
-    this->m_usbInterface->handleCtrlRequest(p_setupPacket, p_data, p_length);
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-void
-UsbControlPipe::decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket, const void * const /* p_data */ /* = nullptr */, const size_t /* p_length */ /* = 0 */) const {
+UsbControlPipe::decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket, const void * const /* p_data */ /* = nullptr */, const size_t /* p_length */ /* = 0 */) {
     UsbRequest_t request = static_cast<UsbRequest_t>(p_setupPacket.m_bRequest);
 
     USB_PRINTF("UsbControlPipe::%s(): request=%d, m_wLength=%i\r\n", __func__, request, p_setupPacket.m_wLength);
 
     switch (request) {
     case e_SetAddress:
-        this->m_usbDevice->setAddress(p_setupPacket.m_wValue & 0x7F);
+        this->m_usbDevice.setAddress(p_setupPacket.m_wValue & 0x7F);
         /* Acknowledge the setAddress() command on the Default Ctrl Endpoint */
         this->write(NULL, 0);
         break;
@@ -74,20 +55,21 @@ UsbControlPipe::decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket, const
         this->getDescriptor(p_setupPacket.m_wValue, p_setupPacket.m_wLength);
         break;
     case e_SetConfiguration:
-        this->m_usbDevice->setConfiguration(p_setupPacket.m_wValue);
+        this->m_activeConfiguration = this->m_usbDevice.setConfiguration(p_setupPacket.m_wValue);
         this->write(NULL, 0);
         break;
     case e_GetStatus: {
         assert(p_setupPacket.m_wLength == 2);
 
-        const ::usb::UsbDeviceStatus_t status = this->m_usbDevice->getStatus();
+        const ::usb::UsbDeviceStatus_t status = this->m_usbDevice.getStatus();
         this->write(reinterpret_cast<const uint8_t *>(&status), p_setupPacket.m_wLength);
         } break;
     case e_GetConfiguration:
         assert(p_setupPacket.m_wValue == 0);
         assert(p_setupPacket.m_wIndex == 0);
+        assert(p_setupPacket.m_wLength == 1);
 
-        this->getDeviceConfiguration(p_setupPacket.m_wLength);
+        this->getDeviceConfiguration();
         break;
     default:
         assert(false);
@@ -99,11 +81,8 @@ UsbControlPipe::decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket, const
  *
  ******************************************************************************/
 void
-UsbControlPipe::getDeviceConfiguration(const uint8_t p_len) const {
-    assert(this->m_usbDevice != NULL);
-    assert(p_len == sizeof(uint8_t));
-
-    uint8_t cfg = this->m_usbDevice->getConfiguration();
+UsbControlPipe::getDeviceConfiguration(void) const {
+    uint8_t cfg = this->m_usbDevice.getActiveConfiguration();
 
     this->write(&cfg, sizeof(cfg));
 }
@@ -120,16 +99,19 @@ UsbControlPipe::getDescriptor(const uint16_t p_descriptor, const size_t p_len) c
 
     switch (descriptorType) {
     case UsbDescriptorTypeId_e::e_Device:
-        this->getDeviceDescriptor(descriptorId, p_len);
+        assert(descriptorId == 0);
+        this->getDeviceDescriptor(p_len);
         break;
     case UsbDescriptorTypeId_e::e_String:
         this->getStringDescriptor(descriptorId, p_len);
         break;
     case UsbDescriptorTypeId_e::e_Configuration:
-        this->getConfigurationDescriptor(descriptorId, p_len);
+        assert(descriptorId == 0);
+        this->getConfigurationDescriptor(p_len);
         break;
     case UsbDescriptorTypeId_e::e_DeviceQualifier:
-        this->getDeviceQualifierDescriptor(descriptorId, p_len);
+        assert(descriptorId == 0);
+        this->getDeviceQualifierDescriptor(p_len);
         break;
     case UsbDescriptorTypeId_e::e_Interface:
     case UsbDescriptorTypeId_e::e_Endpoint:
@@ -156,9 +138,6 @@ UsbControlPipe::transferComplete(const size_t p_numBytes) const {
      * acknowledge the end of the transfer.
      */
     if (p_numBytes) {
-        /* FIXME As of now, there are no requests that require further processing */
-        // this->decodeSetupPacket(p_setupPacket, p_data, p_numBytes);
-
         /* FIXME We should probably evaluate some return code here... */
         this->m_inEndpoint.write(nullptr, 0);
     }
@@ -168,7 +147,7 @@ UsbControlPipe::transferComplete(const size_t p_numBytes) const {
  *
  ******************************************************************************/
 void
-UsbControlPipe::setupStageComplete(const UsbSetupPacket_t &p_setupPacket) const {
+UsbControlPipe::setupStageComplete(const UsbSetupPacket_t &p_setupPacket) {
     USB_PRINTF("UsbControlPipe::%s(): m_bmRequestType=0x%x m_bRequest=0x%x\r\n", __func__,
       p_setupPacket.m_bmRequestType, p_setupPacket.m_bRequest);
 
@@ -179,7 +158,16 @@ UsbControlPipe::setupStageComplete(const UsbSetupPacket_t &p_setupPacket) const 
  *
  ******************************************************************************/
 void
-UsbControlPipe::decodeSetupPacket(const UsbSetupPacket_t &p_setupPacket, const void * const p_data /* = nullptr */, const size_t p_length /* = 0 */) const {
+UsbControlPipe::setDataStageBuffer(uint32_t * const p_buffer, const size_t p_length) const {
+    assert(this->m_outEndpoint != nullptr);
+    this->m_outEndpoint->setDataStageBuffer(p_buffer, p_length);
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+void
+UsbControlPipe::decodeSetupPacket(const UsbSetupPacket_t &p_setupPacket, const void * const p_data /* = nullptr */, const size_t p_length /* = 0 */) {
     const UsbRecipient_t usbRecipient = static_cast<UsbRecipient_t>(p_setupPacket.m_bmRequestType & 0x0F);
 
     USB_PRINTF("UsbControlPipe::%s(): m_bmRequestType=0x%x p_setupPacket=0x%x\r\n", __func__,
@@ -190,7 +178,7 @@ UsbControlPipe::decodeSetupPacket(const UsbSetupPacket_t &p_setupPacket, const v
         this->decodeDeviceRequest(p_setupPacket, p_data, p_length);
         break;
     case e_Interface:
-        this->decodeInterfaceRequest(p_setupPacket, p_data, p_length);
+        this->decodeInterfaceRequest(p_setupPacket);
         break;
     case e_Endpoint:
     case e_Other:
@@ -205,31 +193,27 @@ UsbControlPipe::decodeSetupPacket(const UsbSetupPacket_t &p_setupPacket, const v
  *
  ******************************************************************************/
 void
-UsbControlPipe::getDeviceDescriptor(const uint8_t p_descriptorId, const size_t p_len) const {
-    assert(p_descriptorId == 0);
+UsbControlPipe::getDeviceDescriptor(const size_t p_len) const {
     USB_PRINTF("UsbControlPipe::%s(): p_descriptorId=%d, p_len=%d\r\n", __func__, p_descriptorId, p_len);
 
-    this->write(reinterpret_cast<const uint8_t *>(&this->m_usbDevice->m_deviceDescriptor), std::min(sizeof(this->m_usbDevice->m_deviceDescriptor), p_len));
+    this->write(reinterpret_cast<const uint8_t *>(&this->m_usbDevice.m_deviceDescriptor), std::min(sizeof(this->m_usbDevice.m_deviceDescriptor), p_len));
 }
 
 /*******************************************************************************
  *
  ******************************************************************************/
 void
-UsbControlPipe::getDeviceQualifierDescriptor(const uint8_t p_descriptorId, const size_t p_len) const {
-    assert(p_descriptorId == 0);
-    this->write(reinterpret_cast<const uint8_t *>(&this->m_usbDevice->m_deviceQualifierDescriptor), std::min(sizeof(this->m_usbDevice->m_deviceQualifierDescriptor), p_len));
+UsbControlPipe::getDeviceQualifierDescriptor(const size_t p_len) const {
+    this->write(reinterpret_cast<const uint8_t *>(&this->m_usbDevice.m_deviceQualifierDescriptor), std::min(sizeof(this->m_usbDevice.m_deviceQualifierDescriptor), p_len));
 }
 
 /*******************************************************************************
  *
  ******************************************************************************/
 void
-UsbControlPipe::getConfigurationDescriptor(const uint8_t p_descriptorId, const size_t p_len) const {
-    assert(p_descriptorId == 0);
-
-    const void *addr = this->m_usbDevice->m_configuration.getDescriptor();
-    size_t len = this->m_usbDevice->m_configuration.getDescriptorSize();
+UsbControlPipe::getConfigurationDescriptor(const size_t p_len) const {
+    const void *addr = this->m_usbDevice.getConfigurationDescriptor();
+    size_t len = this->m_usbDevice.getConfigurationDescriptorSize();
 
     USB_PRINTF("UsbControlPipe::%s(): addr=%p, len=%d, p_len=%d\r\n", __func__, addr, len, p_len);
 
@@ -261,8 +245,8 @@ UsbControlPipe::getStringDescriptor(const uint8_t p_descriptorId, const size_t p
 
         buffer[1] = e_String;
 
-        for (idx = 0; idx < this->m_usbDevice->m_stringDescriptors.m_stringDescriptorTable.m_languageIds.m_numLanguages; idx++, cur++) {
-            * cur = this->m_usbDevice->m_stringDescriptors.m_stringDescriptorTable.m_languageIds.m_langIds[idx];
+        for (idx = 0; idx < this->m_usbDevice.m_stringDescriptors.m_stringDescriptorTable.m_languageIds.m_numLanguages; idx++, cur++) {
+            * cur = this->m_usbDevice.m_stringDescriptors.m_stringDescriptorTable.m_languageIds.m_langIds[idx];
         }
 
         buffer[0] = 2 + idx * sizeof(UsbLangId_t);
@@ -275,7 +259,7 @@ UsbControlPipe::getStringDescriptor(const uint8_t p_descriptorId, const size_t p
     case e_StrDesc_Configuration:
     case e_StrDesc_Interface:
         assert(stringDescriptor < e_StrDesc_Max);
-        this->m_inEndpoint.writeString(this->m_usbDevice->m_stringDescriptors.m_stringDescriptors[stringDescriptor], p_len);
+        this->m_inEndpoint.writeString(this->m_usbDevice.m_stringDescriptors.m_stringDescriptors[stringDescriptor], p_len);
         break;
     default:
         break;

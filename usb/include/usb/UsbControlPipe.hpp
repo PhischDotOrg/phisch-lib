@@ -8,14 +8,14 @@
 #include <usb/UsbTypes.hpp>
 #include <stdint.h>
 
-#include <usb/UsbCtrlOutEndpoint.hpp>
-
+#include <usb/UsbDevice.hpp>
 #include <usb/UsbInEndpoint.hpp>
 
 namespace usb {
 
 class UsbDevice;
-class UsbInterface;
+class UsbConfiguration;
+class UsbCtrlOutEndpoint;
 
 /*******************************************************************************
  *
@@ -46,73 +46,63 @@ public:
         e_SyncFrame         = 0x0C
     } UsbRequest_t;
 
+private:
+    UsbCtrlInEndpoint &m_inEndpoint;
+    UsbCtrlOutEndpoint *m_outEndpoint;
+
+    /**
+     * @brief Pointer to the USB Device Object.
+     * 
+     * Provides access to the USB Device specific operations (e.g. Data Transmission).
+     */
+    UsbDevice &m_usbDevice;
+
+    const UsbConfiguration * m_activeConfiguration;
+
+    void getDescriptor(const uint16_t p_descriptor, const size_t p_len) const;
+    void getDeviceDescriptor(const size_t p_len) const;
+    void getDeviceQualifierDescriptor(const size_t p_len) const;
+    void getConfigurationDescriptor(const size_t p_len) const;
+    void getStringDescriptor(const uint8_t p_descriptorId, const size_t p_len) const;
+    void getDeviceConfiguration(void) const;
+
+    void decodeSetupPacket(const ::usb::UsbSetupPacket_t &p_setupPacket, const void * const p_data = nullptr, const size_t p_length = 0);
+    void decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket, const void * const p_data, const size_t p_length);
+    void decodeInterfaceRequest(const UsbSetupPacket_t &p_setupPacket) const;
+
+public:
 /*******************************************************************************
  *
  ******************************************************************************/
-    UsbControlPipe(UsbCtrlInEndpoint &p_inEndpoint, UsbCtrlOutEndpoint &p_outEndpoint);
-    ~UsbControlPipe();
-
-    constexpr void registerUsbDevice(UsbDevice &p_usbDevice) {
-        assert(this->m_usbDevice == nullptr);
-        this->m_usbDevice = &p_usbDevice;
+    constexpr UsbControlPipe(UsbDevice &p_usbDevice, UsbCtrlInEndpoint &p_inEndpoint)
+      : m_inEndpoint(p_inEndpoint), m_outEndpoint(nullptr), m_usbDevice(p_usbDevice), m_activeConfiguration(nullptr) {
+          this->m_usbDevice.m_ctrlPipe = this;
     }
 
-    constexpr void unregisterUsbDevice(UsbDevice &p_usbDevice) {
-        assert(this->m_usbDevice != NULL);
-        assert(this->m_usbDevice == &p_usbDevice);
+    ~UsbControlPipe() {
 
-        this->m_usbDevice = NULL;
     }
 
-    constexpr void registerUsbInterface(UsbInterface &p_usbInterface) {
-        assert(this->m_usbInterface == nullptr);
-
-        this->m_usbInterface = &p_usbInterface;
+    constexpr void registerCtrlOutEndpoint(UsbCtrlOutEndpoint &p_outEndpoint) {
+        assert(this->m_outEndpoint == nullptr);
+        this->m_outEndpoint = &p_outEndpoint;
     }
 
-    constexpr void unregisterUsbInterface(UsbInterface &p_usbInterface) {
-        assert(this->m_usbInterface != nullptr);
-        assert(this->m_usbInterface == &p_usbInterface);
+    constexpr void unregisterCtrlOutEndpoint(void) {
+        assert(this->m_outEndpoint != nullptr);
 
-        this->m_usbInterface = NULL;
+        this->m_outEndpoint = nullptr;
     }
 
-    void    setupStageComplete(const ::usb::UsbSetupPacket_t &p_setupPacket) const;
+    void    setupStageComplete(const ::usb::UsbSetupPacket_t &p_setupPacket);
 
-    void setDataStageBuffer(uint32_t * const p_buffer, const size_t p_length) const {
-        this->m_outEndpoint.setDataStageBuffer(p_buffer, p_length);
-    }
+    void    setDataStageBuffer(uint32_t * const p_buffer, const size_t p_length) const;
 
     void    transferComplete(const size_t p_numBytes) const;
 
     constexpr void write(const uint8_t * const p_data, const size_t p_length) const {
         this->m_inEndpoint.write(p_data, p_length);
     }
-
-protected:
-    UsbCtrlInEndpoint &m_inEndpoint;
-    UsbCtrlOutEndpoint &m_outEndpoint;
-
-private:
-    /**
-     * @brief Pointer to the USB Device Object.
-     * 
-     * Provides access to the USB Device specific operations (e.g. Data Transmission).
-     */
-    UsbDevice *m_usbDevice;
-
-    UsbInterface *m_usbInterface;
-
-    void getDescriptor(const uint16_t p_descriptor, const size_t p_len) const;
-    void getDeviceDescriptor(const uint8_t p_descriptorId, const size_t p_len) const;
-    void getDeviceQualifierDescriptor(const uint8_t p_descriptorId, const size_t p_len) const;
-    void getConfigurationDescriptor(const uint8_t p_descriptorId, const size_t p_len) const;
-    void getStringDescriptor(const uint8_t p_descriptorId, const size_t p_len) const;
-    void getDeviceConfiguration(const uint8_t p_len) const;
-
-    void decodeSetupPacket(const ::usb::UsbSetupPacket_t &p_setupPacket, const void * const p_data = nullptr, const size_t p_length = 0) const;
-    void decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket, const void * const p_data, const size_t p_length) const;
-    void decodeInterfaceRequest(const UsbSetupPacket_t &p_setupPacket, const void * const p_data, const size_t p_length) const;
 };
 
 /*******************************************************************************

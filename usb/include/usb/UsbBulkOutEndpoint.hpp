@@ -6,9 +6,12 @@
 #define _USB_BULK_OUT_ENDPOINT_HPP_74676FA3_9207_4D3B_B704_CBEA94B67142
 
 #include <usb/UsbTypes.hpp>
-#include <usb/UsbOutEndpoint.hpp>
 
 namespace usb {
+
+    namespace stm32f4 {
+        class BulkOutEndpointViaSTM32F4;
+    }
 
 /*******************************************************************************
  *

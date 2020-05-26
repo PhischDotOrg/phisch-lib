@@ -218,17 +218,17 @@ struct UsbDeviceQualifierDescriptor_s {
     uint8_t     m_bNumConfigurations;
     uint8_t     m_bReserved;
     
-    UsbDeviceQualifierDescriptor_s(const UsbDeviceDescriptor_t &p_deviceDescriptor)
+    constexpr UsbDeviceQualifierDescriptor_s(const UsbDeviceDescriptor_t &p_deviceDescriptor)
       : m_bLength(p_deviceDescriptor.m_bLength),
       m_bDescriptorType(e_DeviceQualifier),
+      m_bcdUsb { p_deviceDescriptor.m_bcdUsb[0], m_bcdUsb[1] = p_deviceDescriptor.m_bcdUsb[1] },
       m_bDeviceClass(p_deviceDescriptor.m_bDeviceClass),
       m_bDeviceSubClass(p_deviceDescriptor.m_bDeviceSubClass),
       m_bDeviceProtocol(p_deviceDescriptor.m_bDeviceProtocol),
       m_bMaxPacketSize0(p_deviceDescriptor.m_bMaxPacketSize0),
       m_bNumConfigurations(p_deviceDescriptor.m_bNumConfigurations),
-      m_bReserved(0) {
-        m_bcdUsb[0] = p_deviceDescriptor.m_bcdUsb[0];
-        m_bcdUsb[1] = p_deviceDescriptor.m_bcdUsb[1];
+      m_bReserved(0)
+    {
     };
 
 private:

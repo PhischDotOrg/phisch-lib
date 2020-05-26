@@ -3,7 +3,6 @@
 -*/
 
 #include <usb/UsbBulkOutEndpoint.hpp>
-#include <usb/UsbHwOutEndpoint.hpp>
 #include <usb/UsbTypes.hpp>
 #include <uart/UartDevice.hpp>
 #include <assert.h>
@@ -17,6 +16,8 @@
 extern usb::UsbBulkInEndpoint bulkInEndpoint;
 
 extern uart::UartDevice g_uart;
+
+/* FIXME Template Code, should be in .hpp */
 
 namespace usb {
 
@@ -36,7 +37,7 @@ UsbBulkOutEndpointT<UsbHwBulkOutEndpointT>::UsbBulkOutEndpointT(UsbHwBulkOutEndp
  ******************************************************************************/
 template<typename UsbHwBulkOutEndpointT>
 UsbBulkOutEndpointT<UsbHwBulkOutEndpointT>::~UsbBulkOutEndpointT() {
-    this->m_hwEndpoint.unregisterEndpointCallback(*this);
+    this->m_hwEndpoint.unregisterEndpointCallback();
 }
 
 /*******************************************************************************

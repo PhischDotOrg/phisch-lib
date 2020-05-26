@@ -9,11 +9,8 @@ set(TARGET_NAME usb)
 set(TARGET_SRC
     UsbBulkOutEndpoint.cpp
     UsbControlPipe.cpp
-    UsbCtrlOutEndpoint.cpp
     UsbDevice.cpp
-    UsbHwOutEndpoint.cpp
     UsbInterface.cpp
-    UsbOutEndpoint.cpp
 )
 add_library(${TARGET_NAME} ${TARGET_SRC})
 target_link_libraries(${TARGET_NAME}

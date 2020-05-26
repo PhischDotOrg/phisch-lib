@@ -15,24 +15,10 @@ namespace usb {
 /*******************************************************************************
  *
  ******************************************************************************/
-UsbVcpInterface::UsbVcpInterface(UsbControlPipe &p_defaultCtrlPipe,
-  UsbBulkOutEndpoint &p_outEndpoint, UsbBulkInEndpoint &p_inEndpoint)
-  : m_defaultCtrlPipe(p_defaultCtrlPipe), m_outEndpoint(p_outEndpoint), m_inEndpoint(p_inEndpoint) {
-    m_defaultCtrlPipe.registerUsbInterface(*this);
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-UsbVcpInterface::~UsbVcpInterface() {
-    m_defaultCtrlPipe.unregisterUsbInterface(*this);
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
 void
-UsbVcpInterface::enable(void) const {
+UsbVcpInterface::enable(const UsbControlPipe &p_defaultCtrlPipe) {
+    this->m_defaultCtrlPipe = &p_defaultCtrlPipe;
+
     this->m_outEndpoint.enable();
     this->m_inEndpoint.enable();
 }
@@ -50,7 +36,7 @@ UsbVcpInterface::disable(void) const {
  *
  ******************************************************************************/
 void
-UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket, const void * const /* p_data */, const size_t /* p_length */) const {
+UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) const {
     /*
      * Table 19: "Class-Specific Request Codes" from "Universal Serial Bus Class Definitions for Communications Devices", Rev. 1.2 (Errata 1) from Nov 3rd, 2010.
      */
@@ -100,14 +86,14 @@ UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket, const 
         assert(p_setupPacket.m_wLength == 7);
         assert(p_setupPacket.m_bmRequestType == 0xA1);
 
-        this->m_defaultCtrlPipe.write(reinterpret_cast<const uint8_t *>(&usbCdcLineCoding), sizeof(struct UsbCdcLineCoding_s));
+        this->m_defaultCtrlPipe->write(reinterpret_cast<const uint8_t *>(&usbCdcLineCoding), sizeof(struct UsbCdcLineCoding_s));
         break;
     case e_SetControlLineState:
         assert(p_setupPacket.m_bmRequestType == 0x21);
         assert(p_setupPacket.m_wIndex == 0); /* FIXME Should be same as UsbInterface::m_interfaceNo */
         assert(p_setupPacket.m_wLength == 0);
 
-        this->m_defaultCtrlPipe.write(nullptr, 0);
+        this->m_defaultCtrlPipe->write(nullptr, 0);
         break;
     case e_SetLineCoding:
         assert(p_setupPacket.m_wValue == 0);
@@ -115,7 +101,7 @@ UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket, const 
         assert(p_setupPacket.m_wLength == 7);
         assert(p_setupPacket.m_bmRequestType == 0x21);
 
-        this->m_defaultCtrlPipe.setDataStageBuffer(reinterpret_cast<uint32_t *>(&usbCdcLineCoding), sizeof(usbCdcLineCoding));
+        this->m_defaultCtrlPipe->setDataStageBuffer(reinterpret_cast<uint32_t *>(&usbCdcLineCoding), sizeof(usbCdcLineCoding));
         break;
     default:
         assert(false);
