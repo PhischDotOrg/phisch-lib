@@ -6,6 +6,7 @@
 #define _USB_BULK_OUT_ENDPOINT_HPP_74676FA3_9207_4D3B_B704_CBEA94B67142
 
 #include <usb/UsbTypes.hpp>
+#include <cstddef>
 
 namespace usb {
 
