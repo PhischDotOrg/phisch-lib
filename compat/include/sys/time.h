@@ -1,7 +1,0 @@
-/*-
- * $Copyright$
--*/
-#ifndef _COMPAT_SYS_TIME_H_7f7fc029_929d_4565_9757_3b2800be692f
-#define _COMPAT_SYS_TIME_H_7f7fc029_929d_4565_9757_3b2800be692f
-
-#endif /* _COMPAT_SYS_TIME_H_7f7fc029_929d_4565_9757_3b2800be692f */
