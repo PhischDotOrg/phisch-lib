@@ -218,7 +218,7 @@ struct UsbDeviceQualifierDescriptor_s {
     uint8_t     m_bNumConfigurations;
     uint8_t     m_bReserved;
     
-    constexpr UsbDeviceQualifierDescriptor_s(const UsbDeviceDescriptor_t &p_deviceDescriptor)
+    UsbDeviceQualifierDescriptor_s(const UsbDeviceDescriptor_t &p_deviceDescriptor)
       : m_bLength(p_deviceDescriptor.m_bLength),
       m_bDescriptorType(e_DeviceQualifier),
       m_bcdUsb { p_deviceDescriptor.m_bcdUsb[0], m_bcdUsb[1] = p_deviceDescriptor.m_bcdUsb[1] },
@@ -357,8 +357,8 @@ struct UsbSetupPacket_s {
      * @param p_idx Word-offset within Setup Packet Buffer.
      * @return constexpr uint32_t& Reference to Word that is stored at offset \p p_idx from Setup Packet.
      */
-    constexpr uint32_t &operator[](const int p_idx) {
-        uint32_t *ptr = reinterpret_cast<uint32_t *>(this);
+    uint32_t &operator[](const int p_idx) {
+        uint32_t * const ptr = reinterpret_cast<uint32_t *>(this);
 
         return ptr[p_idx];
     };

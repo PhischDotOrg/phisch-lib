@@ -74,7 +74,7 @@ public:
 /*******************************************************************************
  *
  ******************************************************************************/
-    constexpr UsbControlPipe(UsbDevice &p_usbDevice, UsbCtrlInEndpoint &p_inEndpoint)
+    UsbControlPipe(UsbDevice &p_usbDevice, UsbCtrlInEndpoint &p_inEndpoint)
       : m_inEndpoint(p_inEndpoint), m_outEndpoint(nullptr), m_usbDevice(p_usbDevice), m_activeConfiguration(nullptr) {
           this->m_usbDevice.m_ctrlPipe = this;
     }
@@ -83,12 +83,12 @@ public:
 
     }
 
-    constexpr void registerCtrlOutEndpoint(UsbCtrlOutEndpoint &p_outEndpoint) {
+    void registerCtrlOutEndpoint(UsbCtrlOutEndpoint &p_outEndpoint) {
         assert(this->m_outEndpoint == nullptr);
         this->m_outEndpoint = &p_outEndpoint;
     }
 
-    constexpr void unregisterCtrlOutEndpoint(void) {
+    void unregisterCtrlOutEndpoint(void) {
         assert(this->m_outEndpoint != nullptr);
 
         this->m_outEndpoint = nullptr;

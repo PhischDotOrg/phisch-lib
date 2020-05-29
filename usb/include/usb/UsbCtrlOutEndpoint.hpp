@@ -19,7 +19,7 @@ protected:
     UsbControlPipe &    m_ctrlPipe;
 
 public:
-    constexpr UsbCtrlOutEndpoint(UsbControlPipe &p_ctrlPipe) : m_ctrlPipe(p_ctrlPipe) {
+    UsbCtrlOutEndpoint(UsbControlPipe &p_ctrlPipe) : m_ctrlPipe(p_ctrlPipe) {
         m_ctrlPipe.registerCtrlOutEndpoint(*this);
     }
 

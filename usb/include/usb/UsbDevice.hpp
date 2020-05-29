@@ -39,7 +39,17 @@ private:
 public:
     typedef std::initializer_list<const ::usb::UsbConfiguration *> UsbConfigurationList_t;
 
-    constexpr UsbDevice(UsbHwDevice &p_hwDevice, const UsbDeviceDescriptor_t &p_deviceDescriptor, const ::usb::UsbStringDescriptors_t &p_stringDescriptors, const UsbConfigurationList_t p_configurations)
+    /* BUG? Marking the constructor as constexpr triggers an Internal Compiler Error (ICE) when compiling with GCC 9.2.1 and > -O0. */
+#if 0 /* Error message below: */
+[build] /Users/phs/Sandbox/stm32f4-usbdevice/main.cpp:514:1: internal compiler error: in output_constructor_regular_field, at varasm.c:5207
+[build]   514 | } /* extern "C" */
+[build]       | ^
+[build] libbacktrace could not find executable to open
+[build] Please submit a full bug report,
+[build] with preprocessed source if appropriate.
+[build] See <https://gcc.gnu.org/bugs/> for instructions.
+#endif
+    /* constexpr */ UsbDevice(UsbHwDevice &p_hwDevice, const UsbDeviceDescriptor_t &p_deviceDescriptor, const ::usb::UsbStringDescriptors_t &p_stringDescriptors, UsbConfigurationList_t p_configurations)
       : m_hwDevice(p_hwDevice), m_ctrlPipe(nullptr), m_activeConfiguration(0), m_configurations (),
         m_deviceDescriptor(p_deviceDescriptor),
         m_deviceQualifierDescriptor(m_deviceDescriptor),
