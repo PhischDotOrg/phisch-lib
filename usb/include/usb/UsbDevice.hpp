@@ -6,7 +6,8 @@
 #define _GENERIC_USBDEVICE_HPP_74B29084_AF57_422E_B8D6_F7EBF1354A9B
 
 #include <usb/UsbTypes.hpp>
-#include <stdint.h>
+#include <cstdint>
+#include <cassert>
 
 #include <usb/UsbConfiguration.hpp>
 

@@ -5,7 +5,7 @@
 #include <usb/UsbInterface.hpp>
 #include <usb/UsbControlPipe.hpp>
 #include <usb/UsbInEndpoint.hpp>
-#include <usb/UsbBulkOutEndpoint.hpp>
+#include <usb/UsbOutEndpoint.hpp>
 
 #include <assert.h>
 #include <string.h>

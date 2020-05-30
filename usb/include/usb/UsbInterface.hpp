@@ -6,11 +6,11 @@
 #define _USB_INTERFACE_HPP_03CCC19E_822C_44A4_9213_B8215F901BE7
 
 #include <usb/UsbInEndpoint.hpp>
-#include <usb/UsbBulkOutEndpoint.hpp>
 #include <usb/UsbTypes.hpp>
 
 namespace usb {
 
+class UsbBulkOutEndpoint;
 class UsbControlPipe;
 
 /*******************************************************************************

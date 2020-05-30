@@ -8,7 +8,7 @@
 #include <usb/UsbTypes.hpp>
 
 #include <usb/UsbInEndpoint.hpp>
-#include <usb/UsbCtrlOutEndpoint.hpp>
+#include <usb/UsbOutEndpoint.hpp>
 
 #include <usb/UsbConfiguration.hpp>
 

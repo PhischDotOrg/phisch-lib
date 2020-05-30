@@ -12,7 +12,7 @@
 
 namespace usb {
 
-class UsbInterface;
+class UsbControlPipe;
 
 /*******************************************************************************
  *
