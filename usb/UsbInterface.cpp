@@ -16,9 +16,7 @@ namespace usb {
  *
  ******************************************************************************/
 void
-UsbVcpInterface::enable(const UsbControlPipe &p_defaultCtrlPipe) {
-    this->m_defaultCtrlPipe = &p_defaultCtrlPipe;
-
+UsbVcpInterface::enable(void) const {
     this->m_outEndpoint.enable();
     this->m_inEndpoint.enable();
 }
@@ -66,6 +64,32 @@ UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) {
     default:
         assert(false);
     }
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+void
+UsbVendorInterface::enable(void) const {
+    this->m_outEndpoint.enable();
+    this->m_inEndpoint.enable();
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+void
+UsbVendorInterface::disable(void) const {
+    this->m_inEndpoint.disable();
+    this->m_outEndpoint.disable();
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+void
+UsbVendorInterface::handleCtrlRequest(const UsbSetupPacket_t & /* p_setupPacket */) {
+    assert(false);
 }
 
 } /* namespace usb */

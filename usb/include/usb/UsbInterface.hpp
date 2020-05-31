@@ -17,11 +17,24 @@ class UsbControlPipe;
  *
  ******************************************************************************/
 class UsbInterface {
+protected:
+    const UsbControlPipe *  m_defaultCtrlPipe;
+
 public:
     virtual         ~UsbInterface() {};
 
-    virtual void    enable(const UsbControlPipe &p_defaultCtrlPipe) = 0;
+    void enable(const UsbControlPipe &p_defaultCtrlPipe) {
+        this->m_defaultCtrlPipe = &p_defaultCtrlPipe;
+        this->enable();
+    };
+
+    virtual void    enable(void) const = 0;
     virtual void    disable(void) const = 0;
+    /*
+     * Can't be a const-method b/c the concrete implementation will likely have to
+     * call UsbControlPipe::setDataStageBuffer to set up the receive buffer for the
+     * data stage. This is a non-const operation.
+     */
     virtual void    handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) = 0;
 };
 
@@ -71,7 +84,6 @@ private:
     
     UsbCdcLineCoding_t      m_usbCdcLineCoding;
 
-    const UsbControlPipe *  m_defaultCtrlPipe;
     UsbBulkOutEndpoint &    m_outEndpoint;
     UsbBulkInEndpoint &     m_inEndpoint;
 
@@ -84,12 +96,35 @@ public:
 
     }
 
-    void    enable(const UsbControlPipe &p_defaultCtrlPipe) override;
+    void    enable(void) const override;
     void    disable(void) const override;
 
     void    handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;
 };
 
+/*******************************************************************************
+ *
+ ******************************************************************************/
+class UsbVendorInterface : public UsbInterface {
+private:
+    UsbBulkOutEndpoint &    m_outEndpoint;
+    UsbBulkInEndpoint &     m_inEndpoint;
+
+public:
+    UsbVendorInterface(UsbBulkOutEndpoint &p_outEndpoint, UsbBulkInEndpoint &p_inEndpoint)
+      : m_outEndpoint(p_outEndpoint), m_inEndpoint(p_inEndpoint) {
+
+    }
+
+    virtual ~UsbVendorInterface() override {
+
+    }
+
+    void enable(void) const override;
+    void disable(void) const override;
+
+    void handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;
+};
 /*******************************************************************************
  *
  ******************************************************************************/
