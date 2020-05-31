@@ -184,6 +184,8 @@ struct UsbConfigurationDescriptorT {
 } __attribute__((packed));
 static_assert(sizeof(struct UsbConfigurationDescriptorT<void *, 0>) == 9);
 
+typedef ::usb::UsbConfigurationDescriptorT<void *, 0> UsbConfigurationDescriptor_t;
+
 /*******************************************************************************
  *
  ******************************************************************************/
@@ -264,7 +266,7 @@ public:
     const CharT * const m_string;
     const uint8_t       m_length;
 
-    UsbStringDescriptorT(const CharT * const p_string) : m_string(p_string), m_length(len(m_string)) { };
+    constexpr UsbStringDescriptorT(const CharT * const p_string) : m_string(p_string), m_length(len(m_string)) { };
 } __attribute__((packed));
 
 typedef UsbStringDescriptorT<char> UsbStringDescriptor;
@@ -287,6 +289,8 @@ private:
 } __attribute__((packed));
 
 typedef struct UsbLangId_s UsbLangId_t;
+
+static_assert(sizeof(UsbLangId_t) == 2);
 
 /*******************************************************************************
  *
