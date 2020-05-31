@@ -6,14 +6,12 @@
 #define _USB_CTRL_OUT_ENDPOINT_HPP_63105854_B113_4CA9_B8B4_5E6D8464A054
 
 #include <usb/UsbControlPipe.hpp>
+#include <usb/UsbApplication.hpp>
 #include <usb/UsbTypes.hpp>
 
 #include <algorithm>
 
 #include <assert.h>
-
-#include <uart/UartDevice.hpp>
-extern uart::UartDevice g_uart;
 
 namespace usb {
 
@@ -112,11 +110,12 @@ public:
 template<typename UsbHwBulkOutEndpointT>
 class UsbBulkOutEndpointT : public UsbBulkOutEndpoint {
 private:
-    UsbHwBulkOutEndpointT *                     m_hwEndpoint;
-    uint32_t                                    m_inData;
+    UsbBulkOutApplication &     m_usbApplication;
+    UsbHwBulkOutEndpointT *     m_hwEndpoint;
 
 public:
-    UsbBulkOutEndpointT() : m_hwEndpoint(nullptr) {
+    UsbBulkOutEndpointT(UsbBulkOutApplication &p_usbApplication)
+      : m_usbApplication(p_usbApplication), m_hwEndpoint(nullptr) {
     }
 
     virtual ~UsbBulkOutEndpointT() {
@@ -126,7 +125,7 @@ public:
         assert(this->m_hwEndpoint == nullptr);
         this->m_hwEndpoint = &p_hwEndpoint;
 
-        this->m_hwEndpoint->setDataBuffer(&this->m_inData, sizeof(this->m_inData));
+        this->m_hwEndpoint->setDataBuffer(m_usbApplication.getBufferAddress(), m_usbApplication.getBufferLength());
     }
 
     void unregisterHwEndpoint() {
@@ -148,26 +147,9 @@ public:
     }
 
     void transferComplete(const size_t p_numBytes) const {
-        static uint8_t data[sizeof(this->m_inData) + 1];
-
-        USB_PRINTF("UsbBulkOutEndpoint::%s(p_numBytes=%d): ", __func__, p_numBytes);
-
-        for (unsigned i = 0; i < std::min(p_numBytes, sizeof(data) - 1); i++) {
-            data[i] = (this->m_inData >> (8 * i)) & 0xFF;
-        }
-
-        data[std::min(p_numBytes, sizeof(data) - 1)] = '\0';
-        g_uart.printf("%s", data);
-
-    #if defined(USB_DEBUG)
-        g_uart.printf("\r\n");
-    #endif
-
-        // bulkInEndpoint.write(data, std::min(p_numBytes, sizeof(data) - 1));
+        this->m_usbApplication.transferComplete(p_numBytes);
     }
 };
-
-typedef UsbBulkInEndpointT<::usb::stm32f4::BulkInEndpointViaSTM32F4> UsbBulkInEndpoint;
 
 /*******************************************************************************
  *

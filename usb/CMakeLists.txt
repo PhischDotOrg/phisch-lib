@@ -7,6 +7,7 @@
 #*******************************************************************************
 set(TARGET_NAME usb)
 set(TARGET_SRC
+    UsbApplication.cpp
     UsbControlPipe.cpp
     UsbDevice.cpp
     UsbInterface.cpp
