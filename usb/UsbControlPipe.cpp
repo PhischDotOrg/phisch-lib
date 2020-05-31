@@ -194,7 +194,7 @@ UsbControlPipe::decodeSetupPacket(const UsbSetupPacket_t &p_setupPacket, const v
  ******************************************************************************/
 void
 UsbControlPipe::getDeviceDescriptor(const size_t p_len) const {
-    USB_PRINTF("UsbControlPipe::%s(): p_descriptorId=%d, p_len=%d\r\n", __func__, p_descriptorId, p_len);
+    USB_PRINTF("UsbControlPipe::%s(): p_len=%d\r\n", __func__, p_len);
 
     this->write(reinterpret_cast<const uint8_t *>(&this->m_usbDevice.m_deviceDescriptor), std::min(sizeof(this->m_usbDevice.m_deviceDescriptor), p_len));
 }
