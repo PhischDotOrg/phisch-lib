@@ -277,13 +277,9 @@ struct UsbLangId_s {
     uint8_t     m_loByte;
     uint8_t     m_hiByte;
 
-    UsbLangId_s(const uint16_t p_langId) : m_loByte(p_langId & 0xFF),
+    constexpr UsbLangId_s(const uint16_t p_langId) : m_loByte(p_langId & 0xFF),
       m_hiByte((p_langId >> 8) & 0xFF) {
 
-    }
-    
-    ~UsbLangId_s() {
-        
     }
 
 private:
@@ -306,7 +302,8 @@ public:
     const uint8_t               m_numLanguages;
     const UsbLangId_t * const   m_langIds;
 
-    UsbLangIdStringDescriptor_s(const UsbLangId_t * p_langIds) : m_numLanguages(len(p_langIds)), m_langIds(p_langIds) {
+    constexpr UsbLangIdStringDescriptor_s(const UsbLangId_t * p_langIds)
+      : m_numLanguages(len(p_langIds)), m_langIds(p_langIds) {
         
     }
 } __attribute__((packed));
