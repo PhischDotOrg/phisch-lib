@@ -20,7 +20,7 @@ namespace usb {
  ******************************************************************************/
 class UsbBulkOutApplication {
 public:
-    virtual void transferComplete(const size_t p_numBytes) = 0;
+    virtual void        transferComplete(const size_t p_numBytes) = 0;
 
     virtual uint32_t *  getBufferAddress(void) = 0;
     virtual size_t      getBufferLength(void) const = 0;
@@ -60,7 +60,50 @@ public:
     getBufferLength(void) const override {
         return sizeof(this->m_dataBuffer);
     }
+};
 
+/*******************************************************************************
+ *
+ ******************************************************************************/
+template<typename UartAccess>
+class UsbUartApplicationT : public UsbBulkOutApplication {
+private:
+    const UartAccess &  m_uartAccess;
+    union {
+        uint8_t     m_u8[sizeof(uint32_t)];
+        uint32_t    m_u32;    
+    } m_dataBuffer __attribute__((aligned(4)));
+    static_assert(sizeof(m_dataBuffer) == 4);
+
+public:
+    UsbUartApplicationT(const UartAccess &p_uartAccess)
+      : m_uartAccess(p_uartAccess) {
+
+    };
+
+    ~UsbUartApplicationT() {
+
+    };
+
+    void transferComplete(const size_t p_numBytes) override {
+        USB_PRINTF("UsbUartApplicationT::%s(p_numBytes=%d): ", __func__, p_numBytes);
+
+        assert(p_numBytes < sizeof(this->m_dataBuffer));
+
+        for (unsigned i = 0; i < std::min(p_numBytes, sizeof(this->m_dataBuffer)); i++) {
+            m_uartAccess.putf(this->m_dataBuffer.m_u8[i]);
+        }
+    }
+
+    uint32_t *
+    getBufferAddress(void) override {
+        return &this->m_dataBuffer.m_u32;
+    }
+
+    size_t
+    getBufferLength(void) const override {
+        return sizeof(this->m_dataBuffer);
+    }
 };
 
 } /* namespace usb */
