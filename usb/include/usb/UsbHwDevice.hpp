@@ -9,8 +9,13 @@
 
 namespace usb {
 
-/*******************************************************************************
- *
+/***************************************************************************//**
+ * @brief Interface to the Hardware-specific Driver of an USB Device.
+ * 
+ * This encapsulates the Hardware-specific Device Operations needed by the
+ * hardware-independent implementation of the UsbControlPipe.
+ * 
+ * \see stm32f4::UsbDeviceViaSTM32F4
  ******************************************************************************/
 class UsbHwDevice {
 public:
@@ -32,19 +37,35 @@ public:
         e_UsbFullSpeed = 0x3
     };
 
+    /**
+     * @brief Construct a new USB Hardware Device Object.
+     * 
+     * @param p_deviceSpeed USB Speed.
+     */
     UsbHwDevice(const DeviceSpeed_e &p_deviceSpeed) : m_deviceSpeed(p_deviceSpeed) {
         
     };
 
+    /**
+     * @brief Destructor.
+     * 
+     */
     virtual ~UsbHwDevice() {};
 
+    /**
+     * @brief Set the Address of the USB Device.
+     * 
+     * Used by the UsbControlPipe when the USB Host sends the _Set Address_ Control Request.
+     * 
+     * \see UsbControlPipe::decodeDeviceRequest
+     * \see UsbControlPipe::UsbRequest_t::e_SetAddress
+     * 
+     * @param p_address Address of the USB Device as sent by the USB Host in the _Set Address_ Control Request.
+     */
     virtual void setAddress(const uint8_t p_address) const = 0;
 
-    constexpr DeviceSpeed_e getDeviceSpeed(void) {
-        return this->m_deviceSpeed;
-    }
-
 protected:
+    /** @brief Selected USB Device Speed. */
     const DeviceSpeed_e m_deviceSpeed;
 };
 
