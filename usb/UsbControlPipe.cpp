@@ -82,6 +82,10 @@ UsbControlPipe::decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket) {
         uint8_t cfg = this->m_usbDevice.getActiveConfiguration();
         this->write(&cfg, sizeof(cfg));        
         } break;
+    case e_SetFeature:
+        /* FIXME Actually implement something here */
+        this->write(NULL, 0);
+        break;
     default:
         assert(false);
         break;

@@ -92,4 +92,28 @@ UsbVendorInterface::handleCtrlRequest(const UsbSetupPacket_t & /* p_setupPacket 
     assert(false);
 }
 
+/*******************************************************************************
+ *
+ ******************************************************************************/
+void
+UsbHidInterface::enable(void) const {
+    this->m_inEndpoint.enable();
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+void
+UsbHidInterface::disable(void) const {
+    this->m_inEndpoint.disable();
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+void
+UsbHidInterface::handleCtrlRequest(const UsbSetupPacket_t & /* p_setupPacket */) {
+    assert(false);
+}
+
 } /* namespace usb */

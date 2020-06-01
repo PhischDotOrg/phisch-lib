@@ -16,6 +16,7 @@ namespace usb {
     namespace stm32f4 {
         class BulkInEndpointViaSTM32F4;
         class CtrlInEndpointViaSTM32F4;
+        class IrqInEndpointViaSTM32F4;
     }
 
 /*******************************************************************************
@@ -49,6 +50,42 @@ public:
 };
 
 typedef UsbBulkInEndpointT<> UsbBulkInEndpoint;
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+template<class UsbHwIrqInEndpointT = ::usb::stm32f4::IrqInEndpointViaSTM32F4>
+class UsbIrqInEndpointT {
+private:
+    UsbHwIrqInEndpointT &   m_hwEndpoint;
+
+public:
+    UsbIrqInEndpointT(UsbHwIrqInEndpointT &p_hwEndpoint) : m_hwEndpoint(p_hwEndpoint) {
+
+    }
+
+    ~UsbIrqInEndpointT() {
+
+    }
+
+    constexpr void enable(void) const {
+        this->m_hwEndpoint.enable();
+    }
+
+    constexpr void disable(void) const {
+        this->m_hwEndpoint.disable();
+    }
+
+    bool isEnabled(void) const {
+        return this->m_hwEndpoint.isEnabled();
+    }
+
+    constexpr void write(const uint8_t * const p_data, const size_t p_length) const {
+        this->m_hwEndpoint.write(p_data, p_length);
+    }
+};
+
+typedef UsbIrqInEndpointT<> UsbIrqInEndpoint;
 
 /*******************************************************************************
  *

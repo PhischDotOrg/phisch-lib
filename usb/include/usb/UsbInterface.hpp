@@ -125,6 +125,30 @@ public:
 
     void handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;
 };
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+class UsbHidInterface : public UsbInterface {
+private:
+    UsbIrqInEndpoint &  m_inEndpoint;
+
+public:
+    UsbHidInterface(UsbIrqInEndpoint &p_inEndpoint)
+      : m_inEndpoint(p_inEndpoint) {
+
+    }
+
+    virtual ~UsbHidInterface() override {
+
+    }
+
+    void enable(void) const override;
+    void disable(void) const override;
+
+    void handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;
+};
+
 /*******************************************************************************
  *
  ******************************************************************************/

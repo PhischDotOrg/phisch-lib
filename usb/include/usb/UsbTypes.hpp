@@ -630,6 +630,135 @@ typedef union UsbDeviceStatus_u UsbDeviceStatus_t;
 static_assert(sizeof(UsbDeviceStatus_t) == 2u);
 #endif /* defined(__cplusplus) */
 
+/***************************************************************************//**
+ * \brief USB HID 1.11 Subclass Codes
+ *
+ * This enum defines the HID Subclass Codes as per Section 4.2
+ * "Subclass"
+ * of the USB Specification titled
+ * "Device Class Definition for Human Interface Devices (HID)"
+ * from May 27th, 2001.
+ *****************************************************************************/
+enum UsbHid_SubclassCode_e : uint8_t {
+    e_NoSubclass    = 1,
+    e_BootInterface = 2
+};
+
+/***************************************************************************//**
+ * \brief USB HID 1.11 Protocol Codes
+ *
+ * This enum defines the HID Protocol Codes as per Section 4.3
+ * "Protocols"
+ * of the USB Specification titled
+ * "Device Class Definition for Human Interface Devices (HID)"
+ * from May 27th, 2001.
+ *****************************************************************************/
+enum UsbHid_ProtocolCode_e : uint8_t {
+    e_None      = 0,
+    e_Keyboard  = 1,
+    e_Mouse     = 2
+};
+
+/***************************************************************************//**
+ * \brief USB HID 1.11 Country Code
+ *
+ * This enum defines the HID Country Code as per Section 6.2.1
+ * "HID Descriptor"
+ * of the USB Specification titled
+ * "Device Class Definition for Human Interface Devices (HID)"
+ * from May 27th, 2001.
+ *****************************************************************************/
+enum UsbHidCountryCode_e : uint8_t {
+    e_NotSupported      = 0,
+    e_Arabic            = 1,
+    e_Belgian           = 2,
+    e_CanadianBilingual = 3,
+    e_CanadianFrench    = 4,
+    e_CzechRepublic     = 5,
+    e_Danish            = 6,
+    e_Finnish           = 7,
+    e_French            = 8,
+    e_German            = 9,
+    e_Greek             = 10,
+    e_Hebrew            = 11,
+    e_Hungary           = 12,
+    e_International     = 13,
+    e_Italian           = 14,
+    e_Japan             = 15,
+    e_Korean            = 16,
+    e_LatinAmerican     = 17,
+    e_NetherlandsDutch  = 18,
+    e_Norwegian         = 19,
+    e_Persian           = 20,
+    e_Poland            = 21,
+    e_Portuguese        = 22,
+    e_Russia            = 23,
+    e_Slovakia          = 24,
+    e_Spanish           = 25,
+    e_Swedish           = 26,
+    e_SwissFrench       = 27,
+    e_SwissGerman       = 28,
+    e_Switzerland       = 29,
+    e_Taiwan            = 30,
+    e_TurkishQ          = 31,
+    e_UK                = 32,
+    e_US                = 33,
+    e_Yugoslavia        = 34,
+    e_TurkishF          = 35
+};
+
+#if defined(__cplusplus)
+static_assert(sizeof(UsbHidCountryCode_e) == 1u);
+#endif /* defined(__cplusplus) */
+
+/***************************************************************************//**
+ * \brief USB HID 1.11 Descriptor
+ *
+ * These values reflect the Class Descriptor Types as per Section 7.1
+ * "Standard Requests"
+ * of the USB Specification titled
+ * "Device Class Definition for Human Interface Devices (HID)"
+ * from May 27th, 2001.
+ *****************************************************************************/
+enum UsbHidDescriptorTypeId_e : uint8_t {
+    e_Hid                   = 0x21,
+    e_HidReport             = 0x22,
+    e_HidPhysical           = 0x23,
+};
+
+#if defined(__cplusplus)
+static_assert(sizeof(UsbHidDescriptorTypeId_e) == 1u);
+#endif /* defined(__cplusplus) */
+
+/***************************************************************************//**
+ * \brief USB HID 1.11 Descriptor
+ *
+ * This structure defines the HID Descriptor as per Section 6.2.1
+ * "HID Descriptor"
+ * of the USB Specification titled
+ * "Device Class Definition for Human Interface Devices (HID)"
+ * from May 27th, 2001.
+ *****************************************************************************/
+struct UsbHidDescriptor {
+    uint8_t m_bLength;                              /** @brief Size of this descriptor in bytes. */
+    UsbHidDescriptorTypeId_e    m_bDescriptorType;  /** @brief Type of HID descriptor. */
+    struct {
+      uint8_t   m_loByte;
+      uint8_t   m_hiByte;
+    }  m_bcdHID;                        /** @brief HID Class Specification release. */
+    UsbHidCountryCode_e m_bCountryCode; /** @brief Country code of the localized hardware. */
+    uint8_t m_bNumDescriptors;          /** @brief Number of class descriptors, must be > 0. */
+    uint8_t m_bDescriptorTypeName;      /** @brief Constant name identifying type of class descriptor. */
+    struct {
+      uint8_t   m_loByte;
+      uint8_t   m_hiByte;
+    } m_wDescriptorLength;          /** @brief Total Size fo the Descriptor, incl. Report Descriptor(s). */
+} __attribute__((packed));
+
+#if defined(__cplusplus)
+static_assert(sizeof(struct UsbHidDescriptor) == 9u);
+#endif /* defined(__cplusplus) */
+
 /*******************************************************************************
  *
  ******************************************************************************/
