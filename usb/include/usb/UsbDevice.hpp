@@ -16,17 +16,14 @@
 namespace usb {
 
     class UsbHwDevice;
-    // class UsbControlPipe;
 
 /*******************************************************************************
  *
  ******************************************************************************/
 class UsbDevice {
-    friend class UsbControlPipe;
-
 private:
-    UsbHwDevice &   m_hwDevice;
-    UsbControlPipe *m_ctrlPipe;
+    UsbHwDevice &       m_hwDevice;
+    UsbControlPipe *    m_ctrlPipe;
 
     static const uint8_t                        m_maxConfigurations = 1;
     uint8_t                                     m_activeConfiguration;
@@ -37,20 +34,22 @@ private:
     const ::usb::UsbStringDescriptors_t &       m_stringDescriptors;
     const ::usb::UsbDeviceStatus_t              m_deviceStatus;
 
+    void getStringDescriptor(const uint8_t p_descriptorId, const size_t p_len) const;
+
+    constexpr const void * getConfigurationDescriptor(void) const {
+        assert(this->m_configurations[0] != nullptr);
+        return this->m_configurations[0]->getDescriptor();
+    }
+
+    constexpr size_t getConfigurationDescriptorSize(void) const {
+        assert(this->m_configurations[0] != nullptr);
+        return this->m_configurations[0]->getDescriptorSize();
+    }
+
 public:
     typedef std::initializer_list<const ::usb::UsbConfiguration *> UsbConfigurationList_t;
 
-    /* BUG? Marking the constructor as constexpr triggers an Internal Compiler Error (ICE) when compiling with GCC 9.2.1 and > -O0. */
-#if 0 /* Error message below: */
-[build] /Users/phs/Sandbox/stm32f4-usbdevice/main.cpp:514:1: internal compiler error: in output_constructor_regular_field, at varasm.c:5207
-[build]   514 | } /* extern "C" */
-[build]       | ^
-[build] libbacktrace could not find executable to open
-[build] Please submit a full bug report,
-[build] with preprocessed source if appropriate.
-[build] See <https://gcc.gnu.org/bugs/> for instructions.
-#endif
-    /* constexpr */ UsbDevice(UsbHwDevice &p_hwDevice, const UsbDeviceDescriptor_t &p_deviceDescriptor, const ::usb::UsbStringDescriptors_t &p_stringDescriptors, UsbConfigurationList_t p_configurations)
+    constexpr UsbDevice(UsbHwDevice &p_hwDevice, const UsbDeviceDescriptor_t &p_deviceDescriptor, const ::usb::UsbStringDescriptors_t &p_stringDescriptors, UsbConfigurationList_t p_configurations)
       : m_hwDevice(p_hwDevice), m_ctrlPipe(nullptr), m_activeConfiguration(0), m_configurations (),
         m_deviceDescriptor(p_deviceDescriptor),
         m_deviceQualifierDescriptor(m_deviceDescriptor),
@@ -67,8 +66,15 @@ public:
         }
     }    
 
-    ~UsbDevice() {}
+    ~UsbDevice() = default;
 
+    /**
+     * @name Standard USB Device Requests.
+     * 
+     * These methods are used by the USB Default Control Pipe to serve
+     * the Standard USB Device Requests.
+     */
+///@{
     void                            setAddress(const uint8_t p_address) const;
     const UsbConfiguration *        setConfiguration(const uint8_t p_configuration);
 
@@ -76,18 +82,21 @@ public:
         return this->m_activeConfiguration;
     }
 
-    const void * getConfigurationDescriptor(void) const {
-        assert(this->m_configurations[0] != nullptr);
-        return this->m_configurations[0]->getDescriptor();
-    }
-
-    size_t getConfigurationDescriptorSize(void) const {
-        assert(this->m_configurations[0] != nullptr);
-        return this->m_configurations[0]->getDescriptorSize();
-    }
-
     constexpr const ::usb::UsbDeviceStatus_t & getStatus(void) const {
         return this->m_deviceStatus;
+    }
+
+    void getDescriptor(const uint16_t p_descriptor, const size_t p_len) const;
+///@}
+
+    void registerUsbCtrlPipe(UsbControlPipe &p_ctrlPipe) {
+        assert(this->m_ctrlPipe == nullptr);
+        this->m_ctrlPipe = &p_ctrlPipe;
+    }
+
+    void unregisterUsbCtrlPipe(void) {
+        assert(this->m_ctrlPipe != nullptr);
+        this->m_ctrlPipe = nullptr;
     }
 };
 

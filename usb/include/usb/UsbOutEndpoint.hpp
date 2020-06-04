@@ -121,6 +121,11 @@ public:
     virtual ~UsbBulkOutEndpointT() {
     }
 
+    /**
+     * @brief Register the Hardware-specific Endpoint Handler.
+     * 
+     * @param p_hwEndpoint Reference to the Hardware-specific OUT Endpoint Handler.
+     */
     void registerHwEndpoint(UsbHwBulkOutEndpointT &p_hwEndpoint) {
         assert(this->m_hwEndpoint == nullptr);
         this->m_hwEndpoint = &p_hwEndpoint;

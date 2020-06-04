@@ -220,7 +220,7 @@ struct UsbDeviceQualifierDescriptor_s {
     uint8_t     m_bNumConfigurations;
     uint8_t     m_bReserved;
     
-    UsbDeviceQualifierDescriptor_s(const UsbDeviceDescriptor_t &p_deviceDescriptor)
+    constexpr UsbDeviceQualifierDescriptor_s(const UsbDeviceDescriptor_t &p_deviceDescriptor)
       : m_bLength(p_deviceDescriptor.m_bLength),
       m_bDescriptorType(e_DeviceQualifier),
       m_bcdUsb { p_deviceDescriptor.m_bcdUsb[0], m_bcdUsb[1] = p_deviceDescriptor.m_bcdUsb[1] },
