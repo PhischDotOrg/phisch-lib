@@ -25,7 +25,7 @@ typedef struct UsbDeviceQualifierDescriptor_s UsbDeviceQualifierDescriptor_t;
 /*******************************************************************************
  *
  ******************************************************************************/
-typedef enum UsbDescriptorTypeId_e {
+typedef enum UsbDescriptorTypeId_e : uint8_t {
     e_Device                = 0x01,
     e_Configuration         = 0x02,
     e_String                = 0x03,
@@ -43,7 +43,7 @@ static_assert(sizeof(UsbDescriptorTypeId_e) == 1u);
 /*******************************************************************************
  *
  ******************************************************************************/
-typedef enum UsbInterfaceClass_e {
+typedef enum UsbInterfaceClass_e : uint8_t {
     e_UsbInterface_BaseClass                = 0x00,
     e_UsbInterface_AudioDevice              = 0x01,
     e_UsbInterface_CommunicationDeviceClass = 0x02,
@@ -67,6 +67,7 @@ typedef enum UsbInterfaceClass_e {
     e_UsbInterface_ApplicationSpecific      = 0xFE,
     e_UsbInterface_VendorSpecific           = 0xFF,
 } UsbInterfaceClass_t;
+static_assert(sizeof(UsbInterfaceClass_t) == 1);
 
 /***************************************************************************//**
  * \brief USB Endpoint Descriptor
@@ -376,7 +377,7 @@ static_assert(sizeof(UsbSetupPacket_t) == 8);
  * Serial Bus Class Definitions for Communications Devices Specification
  * Revision 1.2 (Errata 1) from Nov 3rd, 2010.
  ******************************************************************************/
-enum UsbCdc_SubclassCode_e {
+enum UsbCdc_SubclassCode_e : uint8_t {
     e_UsbCdcSubclass_Reserved                   = 0x00,
     e_UsbCdcSubclass_DirectLineControl          = 0x01,
     e_UsbCdcSubclass_AbstractControl            = 0x02,
@@ -404,7 +405,7 @@ static_assert(sizeof(UsbCdc_SubclassCode_e) == 1u);
  * Protocol Code" of the  Universal Serial Bus Class Definitions for Communications
  * Devices Specification Revision 1.2 (Errata 1) from Nov 3rd, 2010.
  ******************************************************************************/
-enum UsbCdc_ProtocolCode_e {
+enum UsbCdc_ProtocolCode_e : uint8_t {
     e_UsbCdcProto_None                  = 0x00,
     e_UsbCdcProto_AT_V250               = 0x01,
     e_UsbCdcProto_AT_PCCA101            = 0x02,
@@ -428,7 +429,7 @@ static_assert(sizeof(UsbCdc_ProtocolCode_e) == 1u);
  * Bus Class Definitions for Communications Devices Revision 1.2 (Errata 1) from
  * Nov 3rd, 2010.
  ******************************************************************************/
-enum UsbCdcFunctionalDescriptorType_e {
+enum UsbCdcFunctionalDescriptorType_e : uint8_t {
     e_UsbDec_DescrType_Interface    = 0x24,
     e_UsbDec_DescrType_Endpoint     = 0x25,
 };
@@ -444,7 +445,7 @@ static_assert(sizeof(UsbCdcFunctionalDescriptorType_e) == 1u);
  * of the Universal Serial Bus Class Definitions for Communications Devices
  * Revision 1.2 (Errata 1) from Nov 3rd, 2010.
  ******************************************************************************/
-enum UsbCdcFunctionalDescriptorSubtype_e {
+enum UsbCdcFunctionalDescriptorSubtype_e : uint8_t {
     e_UsbDec_DescrSubtype_Header                = 0x00,
     e_UsbDec_DescrSubtype_CallMgmt              = 0x01,
     e_UsbDec_DescrSubtype_AbstractControlMgmt   = 0x02,
