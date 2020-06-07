@@ -78,8 +78,8 @@ UsbDevice::getDescriptor(const uint16_t p_descriptor, const size_t p_len) const 
 
 #if defined(USB_DEBUG)
 {
-        const void *addr = reinterpret_cast<const uint8_t *>(this->m_usbDevice.getConfigurationDescriptor());
-        size_t len = this->m_usbDevice.getConfigurationDescriptorSize();
+        const void *addr = reinterpret_cast<const uint8_t *>(this->getConfigurationDescriptor());
+        size_t len = this->getConfigurationDescriptorSize();
 
         USB_PRINTF("UsbDevice::%s(): addr=%p, len=%d, p_len=%d\r\n", __func__, addr, len, p_len);
 }
