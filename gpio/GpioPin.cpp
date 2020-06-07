@@ -16,7 +16,7 @@ namespace gpio {
 template<typename EngineT>
 constexpr int
 PinT<EngineT>::set(const mode_t p_mode) const {
-    int rc;
+    int rc = 0;
     switch (p_mode) {
     case On:
         rc = this->m_engine->write(-1, (1 << this->m_pin), (1 << this->m_pin));
