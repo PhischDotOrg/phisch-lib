@@ -94,7 +94,7 @@ public:
     virtual ~UsbBulkOutLoopbackApplicationT() = default;
 
     void transferComplete(const size_t p_numBytes) override {
-        USB_PRINTF("UsbBulkOutLoopbackApplicationT<%d>::%s(p_numBytes=%d): ", nBufferSz, __func__, p_numBytes);
+        USB_PRINTF("UsbBulkOutLoopbackApplicationT<%d>::%s(p_numBytes=%d)\r\n", nBufferSz, __func__, p_numBytes);
 
         this->m_inEndpoint.write(this->m_dataBuffer, std::min(p_numBytes, sizeof(this->m_dataBuffer)));
     }
