@@ -8,7 +8,7 @@
 /*******************************************************************************
  * 
  ******************************************************************************/
-#if defined(DEBUG_BUILD) && defined(GMOCK_FOUND)
+#if defined(UNITTEST)
 #include <gmock/gmock.h>
 
 namespace uart {
@@ -22,10 +22,10 @@ public:
 };
 
 } /* namespace uart */
-#else /* defined(DEBUG_BUILD) && defined(GMOCK_FOUND) */
+#else /* defined(UNITTEST) */
 namespace uart {
 class UartAccessMock;
 } /* namespace uart */
-#endif /* defined(DEBUG_BUILD) && defined(GMOCK_FOUND) */
+#endif /* defined(UNITTEST) */
 
 #endif /* _UART_ACCESS_MOCK_HPP_2a097d30_8f3a_458b_b66f_5dc0a717225f */

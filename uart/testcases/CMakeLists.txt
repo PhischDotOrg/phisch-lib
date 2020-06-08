@@ -4,22 +4,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(phisch)
 
-#*******************************************************************************
-# Testcases Requirements
-#*******************************************************************************
-get_property(GMOCK_FOUND GLOBAL PROPERTY GMOCK_FOUND)
-if(NOT GMOCK_FOUND)
-    message(FATAL_ERROR "The libuart Testcases cannot be build without GMock!")
-endif(NOT GMOCK_FOUND)
-
-get_property(GMOCK_ROOT GLOBAL PROPERTY GMOCK_ROOT)
-include_directories("${GMOCK_ROOT}/include")
-
-get_property(GTEST_ROOT GLOBAL PROPERTY GTEST_ROOT)
-include_directories("${GTEST_ROOT}/include")
-
-get_property(UART_ROOT GLOBAL PROPERTY UART_ROOT)
-include_directories("${UART_ROOT}/include")
+add_definitions("-DUNITTEST")
 
 #*******************************************************************************
 # Testcases

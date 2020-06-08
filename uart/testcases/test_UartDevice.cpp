@@ -6,7 +6,6 @@
 
 #include <uart/UartAccess.hpp>
 #include <uart/UartDevice.hpp>
-#include <uart/UartDevice.cpp>
 
 using ::testing::InSequence;
 
