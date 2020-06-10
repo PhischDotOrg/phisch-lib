@@ -5,7 +5,6 @@
 #include <gmock/gmock.h>
 
 #include <gpio/GpioPin.hpp>
-#include <gpio/GpioPin.cpp>
 
 using ::testing::_;
 using ::testing::Return;
@@ -86,7 +85,7 @@ TEST_F(GpioPinTest, SetZ) {
  *
  ******************************************************************************/
 TEST_F(GpioPinTest, SetError) {
-    EXPECT_CALL(m_mock, write((0 << m_number), (1 << m_number), (1 << m_number))).WillOnce(Return(-1));
+    EXPECT_CALL(m_mock, write((0 << m_number), (1 << m_number), (1 << m_number))).WillOnce(Return(EIO));
     int rc = m_pin->set(gpio::Pin::Off);
     EXPECT_EQ(EIO, rc);
 }
@@ -119,7 +118,7 @@ TEST_F(GpioPinTest, GetOff) {
  *
  ******************************************************************************/
 TEST_F(GpioPinTest, GetError) {
-    EXPECT_CALL(m_mock, read(_)).WillOnce(Return(-1));
+    EXPECT_CALL(m_mock, read(_)).WillOnce(Return(EIO));
 
     gpio::Pin::mode_t mode;
     int rc = m_pin->get(mode);

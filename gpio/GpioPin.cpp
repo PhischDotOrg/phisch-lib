@@ -2,8 +2,13 @@
  * $Copyright$
 -*/
 
+#ifndef _GPIO_PIN
+#define _GPIO_PIN
+#else
+#error Foobar
+#endif
+
 #include <gpio/GpioPin.hpp>
-#include <gpio/GpioEngine.cpp>
 
 #include <errno.h>
 #include <stddef.h>

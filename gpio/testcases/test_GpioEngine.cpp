@@ -4,8 +4,7 @@
 
 #include <gmock/gmock.h>
 
-#include <gpio/GpioEngine.hpp>
-#include <gpio/GpioEngine.cpp>
+##include <gpio/GpioEngine.hpp>
 
 #include <errno.h>
 

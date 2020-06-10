@@ -5,34 +5,19 @@ cmake_minimum_required(VERSION 2.8)
 project(phisch)
 
 #*******************************************************************************
-# Testcases Requirements
-#*******************************************************************************
-get_property(GMOCK_FOUND GLOBAL PROPERTY GMOCK_FOUND)
-if(NOT GMOCK_FOUND)
-    message(FATAL_ERROR "The libgpio Testcases cannot be build without GMock!")
-endif(NOT GMOCK_FOUND)
-
-get_property(GMOCK_ROOT GLOBAL PROPERTY GMOCK_ROOT)
-include_directories("${GMOCK_ROOT}/include")
-
-get_property(GTEST_ROOT GLOBAL PROPERTY GTEST_ROOT)
-include_directories("${GTEST_ROOT}/include")
-
-get_property(GPIO_ROOT GLOBAL PROPERTY GPIO_ROOT)
-include_directories("${GPIO_ROOT}")
-include_directories("${GPIO_ROOT}/include")
-
-#*******************************************************************************
 # Compile Environment
 #*******************************************************************************
+remove_definitions("-DGPIO_ENV=STM32F4")
 add_definitions("-DGPIO_ENV=GTest")
+
+add_definitions("-DUNITTEST")
 
 #*******************************************************************************
 # Testcases
 #*******************************************************************************
 set(COMPONENTS
-    GpioAccessVia74x595
-    GpioAccessViaLpt
+    # GpioAccessVia74x595
+    # GpioAccessViaLpt
     GpioEngine
     GpioPin
 )
@@ -42,7 +27,7 @@ foreach(COMPONENT IN LISTS COMPONENTS)
 
     set(COMPONENT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/../${COMPONENT}.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../${COMPONENT}.cpp
+#        ${CMAKE_CURRENT_SOURCE_DIR}/../${COMPONENT}.cpp
         test_${COMPONENT}.cpp
     )
 
@@ -52,6 +37,7 @@ foreach(COMPONENT IN LISTS COMPONENTS)
         ${COMPONENT_SOURCES}
     )
     target_link_libraries(${COMPONENT_TESTRUNNER}
+        gpio
         gmock
         gmock_main
     )

@@ -23,10 +23,7 @@ target_link_libraries(${TARGET_NAME} INTERFACE
 #*******************************************************************************
 # Testcases
 #*******************************************************************************
-if (GMOCK_FOUND)
+if (UNITTEST)
     MESSAGE(STATUS "Building libgpio Testcases")
     add_subdirectory(testcases)
-    target_link_libraries(${GPIO_LIB}
-        gmock
-    )
-endif(GMOCK_FOUND)
+endif()

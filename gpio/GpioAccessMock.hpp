@@ -5,7 +5,7 @@
 #ifndef _GPIO_ACCESS_MOCK_HPP_e648ca25_53d4_4daa_b693_34f01075a991
 #define _GPIO_ACCESS_MOCK_HPP_e648ca25_53d4_4daa_b693_34f01075a991
 
-#if defined(DEBUG_BUILD) && defined(GMOCK_FOUND)
+#if defined(UNITTEST)
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -26,10 +26,10 @@ public:
 };
 
 } /* namespace gpio */
-#else /* defined(DEBUG_BUILD) && defined(GMOCK_FOUND) */
+#else /* defined(UNITTEST) */
 namespace gpio {
     class GpioAccessMock;
 } /* namespace gpio */
-#endif /* defined(DEBUG_BUILD) && defined(GMOCK_FOUND) */
+#endif /* defined(UNITTEST) */
 
 #endif /* _GPIO_ACCESS_MOCK_HPP_e648ca25_53d4_4daa_b693_34f01075a991 */

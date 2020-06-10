@@ -76,7 +76,7 @@ typedef PinT<> GpioPin;
 /*******************************************************************************
  *
  ******************************************************************************/
-#if defined(GMOCK_FOUND) && defined(DEBUG_BUILD)
+#if defined(UNITTEST)
 
 #include <gmock/gmock.h>
 
@@ -138,7 +138,7 @@ public:
 }; /* GpioPinMock */
 
 } /* namespace gpio */
-#endif /* defined(GMOCK_FOUND) && defined(DEBUG_BUILD) */
+#endif /* defined(UNITTEST) */
 
 #include <gpio/GpioPin.cpp>
 
