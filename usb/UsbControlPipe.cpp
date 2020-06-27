@@ -162,8 +162,8 @@ void
 UsbControlPipe::decodeSetupPacket(const UsbSetupPacket_t &p_setupPacket) {
     const UsbRecipient_t usbRecipient = static_cast<UsbRecipient_t>(p_setupPacket.m_bmRequestType & 0x0F);
 
-    USB_PRINTF("UsbControlPipe::%s(): m_bmRequestType=0x%x p_setupPacket=0x%x\r\n", __func__,
-      p_setupPacket.m_bmRequestType, p_setupPacket.m_bRequest);
+    USB_PRINTF("UsbControlPipe::%s(): m_bmRequestType=0x%x m_bRequest=0x%x m_wValue=0x%x m_wIndex=0x%x \r\n", __func__,
+      p_setupPacket.m_bmRequestType, p_setupPacket.m_bRequest, p_setupPacket.m_wValue, p_setupPacket.m_wIndex);
 
     switch (usbRecipient) {
     case e_Device:
