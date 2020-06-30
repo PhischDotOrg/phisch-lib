@@ -56,8 +56,8 @@ public:
 
     }
 
-    constexpr int set(const mode_t p_mode) const;
-    constexpr int get(mode_t &p_mode) const;
+    constexpr void  set(const mode_t p_mode) const;
+    constexpr void  get(mode_t &p_mode) const;
 
     template<typename Mode_e, typename Termination_e, typename Function_e>
     constexpr int enable(Mode_e p_mode, const Termination_e p_termination, const Function_e p_function) const {

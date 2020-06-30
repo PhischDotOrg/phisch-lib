@@ -141,10 +141,8 @@ public:
      * @param p_output  Bit-vector [MSB:0] of output enable values.
      * @param p_mask    Bit-vector [MSB:0] that masks other two parameters.
      *
-     * @returns Zero on success
-     * @returns \c EIO in case of an error from the underlying implementation.
      */
-    int write(EngineT::vector_t p_value, EngineT::vector_t p_output, EngineT::vector_t p_mask) const;
+    void write(EngineT::vector_t p_value, EngineT::vector_t p_output, EngineT::vector_t p_mask) const;
 
     /*!
      * @brief Read GPIO status from actual engine.
@@ -155,11 +153,8 @@ public:
      *
      * @param[out] p_vector Pointer to Bit-vector [MSB:0] of input pin values.
      *
-     * @returns Zero on success.
-     * @returns \c EIO in case of an error from the underlying implementation.
-     * @returns \c EINVAL if \c p_vector is \c NULL.
      */
-    int read(EngineT::vector_t &p_vector) const;
+    void read(EngineT::vector_t &p_vector) const;
 
     /*!
      * @brief Initializes GPIO engine.

@@ -30,23 +30,19 @@ EngineT<AccessT>::~EngineT() {
  *
  ******************************************************************************/
 template<typename AccessT>
-int
+void
 EngineT<AccessT>::write(EngineT::vector_t p_value, EngineT::vector_t p_output,
   EngineT::vector_t p_mask) const {
-    int rc = this->m_access->write(p_value, p_output, p_mask);
-    if (rc != 0)
-        rc = EIO;
-
-    return (rc);
+    this->m_access->write(p_value, p_output, p_mask);
 }
 
 /*******************************************************************************
  *
  ******************************************************************************/
 template<typename AccessT>
-int
+void
 EngineT<AccessT>::read(EngineT::vector_t &p_value) const {
-    return this->m_access->read(p_value);
+    this->m_access->read(p_value);
 }
 
 /*******************************************************************************
@@ -55,11 +51,7 @@ EngineT<AccessT>::read(EngineT::vector_t &p_value) const {
 template<typename AccessT>
 int
 EngineT<AccessT>::init(void) const {
-    int rc = this->m_access->write(0, 0, -1);
-    if (rc != 0)
-        rc = EIO;
-
-    return (rc);
+    return this->m_access->write(0, 0, -1);
 }
 
 } /* namespace gpio */
