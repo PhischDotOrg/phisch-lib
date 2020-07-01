@@ -112,8 +112,37 @@ UsbHidInterface::disable(void) const {
  *
  ******************************************************************************/
 void
-UsbHidInterface::handleCtrlRequest(const UsbSetupPacket_t & /* p_setupPacket */) {
-    assert(false);
+UsbHidInterface::handleCtrlRequest(const UsbSetupPacket_t & p_setupPacket) {
+    UsbHidRequest_e request = static_cast<UsbHidRequest_e>(p_setupPacket.m_bRequest);
+
+    switch (request) {
+    case e_SetIdle:
+        this->m_defaultCtrlPipe->write(nullptr, 0);
+        break;
+    case e_GetDescriptor:
+        this->getDescriptor(p_setupPacket.m_wValue, p_setupPacket.m_wLength);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+void
+UsbHidInterface::getDescriptor(const uint16_t p_descriptor, const size_t p_len) const {
+    const UsbHidDescriptorTypeId_e  descriptorType = static_cast<UsbHidDescriptorTypeId_e>((p_descriptor >> 8) & 0xFF);
+    uint8_t                         descriptorId = p_descriptor & 0xFF;
+
+    switch (descriptorType) {
+    case e_HidReport:
+        assert(descriptorId == 0);
+        this->m_defaultCtrlPipe->write(this->m_reportDescriptor, std::min(this->m_reportDescriptorLength, p_len));
+        break;
+    default:
+        assert(false);
+    }
 }
 
 } /* namespace usb */

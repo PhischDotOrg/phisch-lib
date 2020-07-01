@@ -131,11 +131,26 @@ public:
  ******************************************************************************/
 class UsbHidInterface : public UsbInterface {
 private:
-    UsbIrqInEndpoint &  m_inEndpoint;
+    UsbIrqInEndpoint &      m_inEndpoint;
+    const uint8_t * const   m_reportDescriptor;
+    const size_t            m_reportDescriptorLength;
+
+    enum UsbHidRequest_e : uint8_t {
+        e_GetReport             = 0x01,
+        e_GetIdle               = 0x02,
+        e_GetProtocol           = 0x03,
+        e_GetDescriptor         = 0x06,
+        e_SetDescriptor         = 0x07,
+        e_SetReport             = 0x09,
+        e_SetIdle               = 0x0a,
+        e_SetProtocol           = 0x0b
+    };
+
+    void getDescriptor(const uint16_t p_descriptor, const size_t p_len) const;
 
 public:
-    UsbHidInterface(UsbIrqInEndpoint &p_inEndpoint)
-      : m_inEndpoint(p_inEndpoint) {
+    UsbHidInterface(UsbIrqInEndpoint &p_inEndpoint, const uint8_t * const p_reportDescriptor, const size_t p_reportDescriptorLength)
+      : m_inEndpoint(p_inEndpoint), m_reportDescriptor(p_reportDescriptor), m_reportDescriptorLength(p_reportDescriptorLength) {
 
     }
 
@@ -146,7 +161,7 @@ public:
     void enable(void) const override;
     void disable(void) const override;
 
-    void handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;
+    void handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;    
 };
 
 /*******************************************************************************
