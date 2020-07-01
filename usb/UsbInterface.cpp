@@ -122,6 +122,10 @@ UsbHidInterface::handleCtrlRequest(const UsbSetupPacket_t & p_setupPacket) {
     case e_GetDescriptor:
         this->getDescriptor(p_setupPacket.m_wValue, p_setupPacket.m_wLength);
         break;
+    case e_SetProtocol:
+        /* FIXME Actually do something useful here */
+        this->m_defaultCtrlPipe->write(nullptr, 0);
+        break;
     default:
         assert(false);
     }
