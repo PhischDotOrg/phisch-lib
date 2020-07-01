@@ -640,8 +640,8 @@ static_assert(sizeof(UsbDeviceStatus_t) == 2u);
  * from May 27th, 2001.
  *****************************************************************************/
 enum UsbHid_SubclassCode_e : uint8_t {
-    e_NoSubclass    = 1,
-    e_BootInterface = 2
+    e_NoSubclass    = 0,
+    e_BootInterface = 1
 };
 
 /***************************************************************************//**
