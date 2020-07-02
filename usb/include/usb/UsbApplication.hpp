@@ -163,6 +163,80 @@ public:
     }
 };
 
+/***************************************************************************//**
+ * @brief USB HID Application that simulates a USB Mouse.
+ *
+ ******************************************************************************/
+class UsbMouseApplication {
+    typedef struct HidData_s {
+        union {
+            uint8_t     m_data;
+            struct {
+                uint8_t m_leftButton : 1;
+                uint8_t m_middleButton : 1;
+                uint8_t m_rightButton : 1;
+                uint8_t m_reserved : 5;
+            } m_bitfield;
+        }           m_button;
+        int8_t      m_xAxis;
+        int8_t      m_yAxis;
+    } __attribute__((packed)) HidData_t;
+
+    static_assert(sizeof(HidData_t) == 3);
+
+private:
+    const UsbIrqInEndpoint &    m_irqInEndpoint;
+    HidData_t                   m_hidData;
+
+public:
+    constexpr UsbMouseApplication(const UsbIrqInEndpoint &p_irqInEndpoint)
+      : m_irqInEndpoint(p_irqInEndpoint), m_hidData {} {
+
+    }
+
+    ~UsbMouseApplication() {
+
+    }
+
+    enum Button_e {
+        e_LeftButton    = (1 << 0),
+        e_MiddleButton  = (1 << 1),
+        e_RightButton   = (1 << 2) 
+    };
+
+    void
+    setButton(Button_e p_button, bool p_pressed) {
+        switch (p_button) {
+        case e_LeftButton:
+            this->m_hidData.m_button.m_bitfield.m_leftButton = p_pressed;
+            break;
+        case e_MiddleButton:
+            this->m_hidData.m_button.m_bitfield.m_middleButton = p_pressed;
+            break;
+        case e_RightButton:
+            this->m_hidData.m_button.m_bitfield.m_rightButton = p_pressed;
+            break;
+        }
+    }
+
+    void
+    setXAxis(int8_t m_pos) {
+        this->m_hidData.m_xAxis = m_pos;
+    }
+
+    void
+    setYAxis(int8_t m_pos) {
+        this->m_hidData.m_yAxis = m_pos;
+    }
+
+    void
+    updateHost(void) const {
+        if (m_irqInEndpoint.isEnabled()) {
+            m_irqInEndpoint.write(reinterpret_cast<const uint8_t *>(&this->m_hidData), sizeof(HidData_t));
+        }
+    }
+};
+
 } /* namespace usb */
 
 #endif /* __USB_APPLICATION_HPP_2F432858_61CD_42BC_9ED8_09B633CA4237 */
