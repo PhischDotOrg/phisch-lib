@@ -157,7 +157,7 @@ public:
      * 
      * \see CtrlInEndpoint::write
      */
-    constexpr void write(const uint8_t * const p_data, const size_t p_length) const {
+    void write(const uint8_t * const p_data, const size_t p_length) const {
         this->m_inEndpoint.write(p_data, p_length);
     }
 
@@ -172,7 +172,7 @@ public:
      * 
      * \see CtrlInEndpoint::write
      */
-    constexpr void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_length) const {
+    void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_length) const {
         this->m_inEndpoint.writeString(p_string, p_length);
     }
 ///@}

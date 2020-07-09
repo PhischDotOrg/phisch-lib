@@ -5,25 +5,23 @@
 #ifndef _USB_BULK_IN_ENDPOINT_HPP_76D17E20_63CB_4205_82BB_AEE1A21ED510
 #define _USB_BULK_IN_ENDPOINT_HPP_76D17E20_63CB_4205_82BB_AEE1A21ED510
 
-#include <usb/InEndpointViaSTM32F4.hpp>
 #include <usb/UsbTypes.hpp>
+#include <cstddef>
 
 namespace usb {
 
 /*******************************************************************************
  *
  ******************************************************************************/
-    namespace stm32f4 {
-        class BulkInEndpointViaSTM32F4;
-        class CtrlInEndpointViaSTM32F4;
-        class IrqInEndpointViaSTM32F4;
-    }
+class UsbBulkInEndpoint {
+public:
+    virtual void enable(void) const = 0;
+    virtual void disable(void) const = 0;
+    virtual void write(const uint8_t * const p_data, const size_t p_length) const = 0;
+};
 
-/*******************************************************************************
- *
- ******************************************************************************/
-template<class UsbHwBulkInEndpointT = ::usb::stm32f4::BulkInEndpointViaSTM32F4>
-class UsbBulkInEndpointT {
+template<class UsbHwBulkInEndpointT>
+class UsbBulkInEndpointT : UsbBulkInEndpoint {
 private:
     UsbHwBulkInEndpointT &  m_hwEndpoint;
 
@@ -32,66 +30,82 @@ public:
 
     }
 
-    ~UsbBulkInEndpointT() {
+    virtual ~UsbBulkInEndpointT() {
 
     }
 
-    constexpr void enable(void) const {
+    void enable(void) const override {
         this->m_hwEndpoint.enable();
     }
 
-    constexpr void disable(void) const {
+    void disable(void) const override {
         this->m_hwEndpoint.disable();
     }
 
-    constexpr void write(const uint8_t * const p_data, const size_t p_length) const {
+    void write(const uint8_t * const p_data, const size_t p_length) const override {
         this->m_hwEndpoint.write(p_data, p_length);
     }
 };
 
-typedef UsbBulkInEndpointT<> UsbBulkInEndpoint;
-
 /*******************************************************************************
  *
  ******************************************************************************/
-template<class UsbHwIrqInEndpointT = ::usb::stm32f4::IrqInEndpointViaSTM32F4>
-class UsbIrqInEndpointT {
+class UsbIrqInEndpoint {
+public:
+            UsbIrqInEndpoint() = default;
+    virtual ~UsbIrqInEndpoint() {};
+
+    virtual void enable(void) const = 0;
+    virtual void disable(void) const = 0;
+    virtual void write(const uint8_t * const p_data, const size_t p_length) const = 0;
+    virtual bool isEnabled(void) const = 0;
+};
+
+template<class UsbHwIrqInEndpointT>
+class UsbIrqInEndpointT : public UsbIrqInEndpoint {
 private:
     UsbHwIrqInEndpointT &   m_hwEndpoint;
 
 public:
-    UsbIrqInEndpointT(UsbHwIrqInEndpointT &p_hwEndpoint) : m_hwEndpoint(p_hwEndpoint) {
+    constexpr UsbIrqInEndpointT(UsbHwIrqInEndpointT &p_hwEndpoint) : m_hwEndpoint(p_hwEndpoint) {
 
     }
 
-    ~UsbIrqInEndpointT() {
+    virtual ~UsbIrqInEndpointT() override {
 
     }
 
-    constexpr void enable(void) const {
+    void enable(void) const override {
         this->m_hwEndpoint.enable();
     }
 
-    constexpr void disable(void) const {
+    void disable(void) const override {
         this->m_hwEndpoint.disable();
     }
 
-    bool isEnabled(void) const {
+    bool isEnabled(void) const override {
         return this->m_hwEndpoint.isEnabled();
     }
 
-    constexpr void write(const uint8_t * const p_data, const size_t p_length) const {
+    void write(const uint8_t * const p_data, const size_t p_length) const override {
         this->m_hwEndpoint.write(p_data, p_length);
     }
 };
 
-typedef UsbIrqInEndpointT<> UsbIrqInEndpoint;
-
 /*******************************************************************************
  *
  ******************************************************************************/
-template<class UsbHwCtrlInEndpointT = ::usb::stm32f4::CtrlInEndpointViaSTM32F4>
-class UsbCtrlInEndpointT {
+class UsbCtrlInEndpoint {
+public:
+            UsbCtrlInEndpoint() = default;
+    virtual ~UsbCtrlInEndpoint() {};
+
+    virtual void write(const uint8_t * const p_data, const size_t p_length) const = 0;
+    virtual void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_len) const = 0;
+};
+
+template<class UsbHwCtrlInEndpointT>
+class UsbCtrlInEndpointT : public UsbCtrlInEndpoint {
 private:
     UsbHwCtrlInEndpointT &   m_hwEndpoint;
 
@@ -104,15 +118,14 @@ public:
 
     }
     
-    constexpr void write(const uint8_t * const p_data, const size_t p_length) const {
+    void write(const uint8_t * const p_data, const size_t p_length) const override {
         this->m_hwEndpoint.write(p_data, p_length);
     }
 
-    constexpr void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_len) const {
+    void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_len) const override {
         this->m_hwEndpoint.writeString(p_string, p_len);
     }
 };
-typedef UsbCtrlInEndpointT<> UsbCtrlInEndpoint;
 
 /*******************************************************************************
  *
