@@ -75,9 +75,9 @@ public:
      *
      * @param p_access Pointer to actual GPIO engine implementation.
      */
-    EngineT(AccessT * const p_access);
+    constexpr EngineT(AccessT * const p_access) : m_access(p_access) {};
 
-    ~EngineT(void);
+    ~EngineT(void) {};
 
     /*!
      * @brief Number of pins this engine instantiation can support.
@@ -142,7 +142,9 @@ public:
      * @param p_mask    Bit-vector [MSB:0] that masks other two parameters.
      *
      */
-    void write(EngineT::vector_t p_value, EngineT::vector_t p_output, EngineT::vector_t p_mask) const;
+    void write(EngineT::vector_t p_value, EngineT::vector_t p_output, EngineT::vector_t p_mask) const {
+        this->m_access->write(p_value, p_output, p_mask);
+    }
 
     /*!
      * @brief Read GPIO status from actual engine.
@@ -154,7 +156,9 @@ public:
      * @param[out] p_vector Pointer to Bit-vector [MSB:0] of input pin values.
      *
      */
-    void read(EngineT::vector_t &p_vector) const;
+    void read(EngineT::vector_t &p_vector) const {
+        this->m_access->read(p_vector);
+    }
 
     /*!
      * @brief Initializes GPIO engine.
@@ -165,7 +169,9 @@ public:
      * @returns Zero on success.
      * @returns \c EIO in case of an error from the hardware.
      */
-    int init(void) const;
+    int init(void) const {
+        return this->m_access->write(0, 0, -1);
+    }
 
     template<typename Mode_e, typename Termination_e, typename Function_e> int enable(const uint8_t p_pin, Mode_e p_mode, const Termination_e p_termination, const Function_e p_function) const {
         return this->m_access->enable(p_pin, p_mode, p_termination, p_function);
@@ -180,7 +186,5 @@ public:
 typedef EngineT< > GpioEngine;
 
 }; /* namespace gpio */
-
-#include <gpio/GpioEngine.cpp>
 
 #endif /* _GPIO_ENGINE_HPP_a7b29109_9d79_486c_98ea_8cf0df5b29d8 */

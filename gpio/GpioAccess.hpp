@@ -14,11 +14,6 @@
 #define GPIO_ENV Undefined
 #endif
 
-#if defined(STM32F4)
-#undef STM32F4
-#define STM32F4 STM32F4
-#endif /* defined(STM32F4) */
-
 /*******************************************************************************
  *
  ******************************************************************************/
@@ -43,11 +38,6 @@ public:
 #include <gpio/GpioAccessViaLpt.hpp>
 #include <gpio/GpioAccessViaSTM32F4.hpp>
 #include <gpio/GpioAccessVia74x595.hpp>
-
-#if defined(STM32F4)
-#undef STM32F4
-#define STM32F4 STM32F4
-#endif /* defined(STM32F4) */
 
 /*******************************************************************************
  *

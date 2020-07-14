@@ -59,8 +59,7 @@ TEST_F(GpioPinTest, CreateAndDelete) {
  ******************************************************************************/
 TEST_F(GpioPinTest, SetHi) {
     EXPECT_CALL(m_mock, write(-1, (1 << m_number), (1 << m_number))).WillOnce(Return(0));
-    int rc = m_pin->set(gpio::Pin::On);
-    EXPECT_EQ(0, rc);
+    m_pin->set(gpio::Pin::On);
 }
 
 /*******************************************************************************
@@ -68,8 +67,7 @@ TEST_F(GpioPinTest, SetHi) {
  ******************************************************************************/
 TEST_F(GpioPinTest, SetLo) {
     EXPECT_CALL(m_mock, write(0, (1 << m_number), (1 << m_number))).WillOnce(Return(0));
-    int rc = m_pin->set(gpio::Pin::Off);
-    EXPECT_EQ(0, rc);
+    m_pin->set(gpio::Pin::Off);
 }
 
 /*******************************************************************************
@@ -77,8 +75,7 @@ TEST_F(GpioPinTest, SetLo) {
  ******************************************************************************/
 TEST_F(GpioPinTest, SetZ) {
     EXPECT_CALL(m_mock, write(_, (0 << m_number), (1 << m_number))).WillOnce(Return(0));
-    int rc = m_pin->set(gpio::Pin::HiZ);
-    EXPECT_EQ(0, rc);
+    m_pin->set(gpio::Pin::HiZ);
 }
 
 /*******************************************************************************
@@ -86,8 +83,7 @@ TEST_F(GpioPinTest, SetZ) {
  ******************************************************************************/
 TEST_F(GpioPinTest, SetError) {
     EXPECT_CALL(m_mock, write((0 << m_number), (1 << m_number), (1 << m_number))).WillOnce(Return(EIO));
-    int rc = m_pin->set(gpio::Pin::Off);
-    EXPECT_EQ(EIO, rc);
+    m_pin->set(gpio::Pin::Off);
 }
 
 /*******************************************************************************
@@ -97,8 +93,8 @@ TEST_F(GpioPinTest, GetOn) {
     EXPECT_CALL(m_mock, read(_)).WillOnce(DoAll(SetArgReferee<0>((1 << m_number)), Return(0)));
 
     gpio::Pin::mode_t mode;
-    int rc = m_pin->get(mode);
-    EXPECT_EQ(0, rc);
+    m_pin->get(mode);
+
     EXPECT_EQ(gpio::Pin::On, mode);
 }
 
@@ -109,20 +105,9 @@ TEST_F(GpioPinTest, GetOff) {
     EXPECT_CALL(m_mock, read(_)).WillOnce(DoAll(SetArgReferee<0>(0xFF & ~(1 << m_number)), Return(0)));
 
     gpio::Pin::mode_t mode;
-    int rc = m_pin->get(mode);
-    EXPECT_EQ(0, rc);
+    m_pin->get(mode);
+
     EXPECT_EQ(gpio::Pin::Off, mode);
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-TEST_F(GpioPinTest, GetError) {
-    EXPECT_CALL(m_mock, read(_)).WillOnce(Return(EIO));
-
-    gpio::Pin::mode_t mode;
-    int rc = m_pin->get(mode);
-    EXPECT_EQ(EIO, rc);
 }
 
 } /* namespace gpio */
