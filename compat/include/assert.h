@@ -17,7 +17,11 @@ void halt(const char * const p_file, unsigned p_line);
 }; /* extern "C" */
 #endif /* defined(__cplusplus) */
 
+#if defined(UNITTEST)
+    #error Do not include this file in Unit Test Environments / when building on the Host.
+#else
 #define assert(_p)  if (!(_p)) halt(__FILE__, __LINE__)
+#endif
 
 #endif /* defined(NDEBUG) */
 

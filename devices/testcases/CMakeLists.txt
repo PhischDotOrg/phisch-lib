@@ -4,23 +4,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(phisch)
 
-#*******************************************************************************
-# Testcases Requirements
-#*******************************************************************************
-get_property(GMOCK_FOUND GLOBAL PROPERTY GMOCK_FOUND)
-if(NOT GMOCK_FOUND)
-    message(FATAL_ERROR "The libdevices Testcases cannot be build without GMock!")
-endif(NOT GMOCK_FOUND)
-
-get_property(GMOCK_ROOT GLOBAL PROPERTY GMOCK_ROOT)
-include_directories("${GMOCK_ROOT}/include")
-
-get_property(GTEST_ROOT GLOBAL PROPERTY GTEST_ROOT)
-include_directories("${GTEST_ROOT}/include")
-
-#*******************************************************************************
-# Compile Environment
-#*******************************************************************************
+add_definitions("-DUNITTEST")
 
 #*******************************************************************************
 # Component Testcases
@@ -46,6 +30,7 @@ foreach(COMPONENT IN LISTS COMPONENTS)
         ${COMPONENT_SOURCES}
     )
     target_link_libraries(${COMPONENT_TESTRUNNER}
+        devices
         gmock
         gmock_main
     )

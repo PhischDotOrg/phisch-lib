@@ -10,10 +10,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#if defined(DEBUG_BUILD) && defined(GMOCK_FOUND)
-#include <gmock/gmock.h>
-#endif /* defined(DEBUG_BUILD) && defined(GMOCK_FOUND) */
-
 namespace spi {
 
 /*******************************************************************************
@@ -38,7 +34,14 @@ protected:
 
 typedef DeviceT<spi::SpiAccess> SpiDevice;
 
-#if defined(DEBUG_BUILD) && defined(GMOCK_FOUND)
+} /* namespace spi */
+
+#if defined(UNITTEST)
+#include <gmock/gmock.h>
+
+namespace spi {
+
+
 /*******************************************************************************
  * 
  ******************************************************************************/
@@ -61,8 +64,8 @@ public:
     MOCK_CONST_METHOD3(shift, ssize_t(const uint32_t p_bits, const uint8_t * const p_tx, uint8_t * const p_rx));
 };
 
-#endif /* defined(DEBUG_BUILD) && defined(GMOCK_FOUND) */
-
 } /* namespace spi */
+
+#endif /* defined(UNITTEST) */
 
 #endif /* __SPIDEVICE_HPP_3ae18ccb_a3d7_4367_a9e0_4d1978197f47 */

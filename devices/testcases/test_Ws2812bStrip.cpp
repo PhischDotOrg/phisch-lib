@@ -94,15 +94,15 @@ TEST_F(Ws2812bStripTest, SetFirstPixel) {
     
     /* Validate Green Bits */
     EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_OFF), this->getSpiByte(base + 0 + 0));
-    EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_ON ), this->getSpiByte(base + 0 + 1));
-    EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_OFF), this->getSpiByte(base + 0 + 2));
-    EXPECT_EQ((WS2812B_ON  << 4) | (WS2812B_OFF), this->getSpiByte(base + 0 + 3));
+    EXPECT_EQ((WS2812B_ON  << 4) | (WS2812B_ON ), this->getSpiByte(base + 0 + 1));
+    EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_ON ), this->getSpiByte(base + 0 + 2));
+    EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_OFF), this->getSpiByte(base + 0 + 3));
 
     /* Validate Red Bits */
     EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_OFF), this->getSpiByte(base + 4 + 0));
-    EXPECT_EQ((WS2812B_ON  << 4) | (WS2812B_ON ), this->getSpiByte(base + 4 + 1));
-    EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_ON ), this->getSpiByte(base + 4 + 2));
-    EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_OFF), this->getSpiByte(base + 4 + 3));
+    EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_ON ), this->getSpiByte(base + 4 + 1));
+    EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_OFF), this->getSpiByte(base + 4 + 2));
+    EXPECT_EQ((WS2812B_ON  << 4) | (WS2812B_OFF), this->getSpiByte(base + 4 + 3));
 
     /* Validate Blue Bits */
     EXPECT_EQ((WS2812B_OFF << 4) | (WS2812B_ON ), this->getSpiByte(base + 8 + 0));

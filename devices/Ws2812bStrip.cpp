@@ -11,7 +11,7 @@
  * The WS2812B wants the data in the following format:
  * 
  * MSB                          LSB  MSB                          LSB  MSB                          LSB
- * [G7][G6][G5][G4][G3][G2][G1][G0]  [R7][R6][R5][R4][R3][R2][R1][R0]  [G7][G6][G5][G4][G3][G2][G1][G0]
+ * [G7][G6][G5][G4][G3][G2][G1][G0]  [R7][R6][R5][R4][R3][R2][R1][R0]  [B7][B6][B5][B4][B3][B2][B1][B0]
  * 
  */
 namespace devices {

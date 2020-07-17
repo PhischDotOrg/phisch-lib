@@ -49,7 +49,7 @@ typedef Sr74x595T<> Sr74x595;
 /*******************************************************************************
  *
  ******************************************************************************/
-#if defined(GMOCK_FOUND) && defined(DEBUG_BUILD)
+#if defined(UNITTEST)
 
 #include <gmock/gmock.h>
 
@@ -66,7 +66,7 @@ public:
 
 } /* namespace devices */
 
-#endif /*  defined(GMOCK_FOUND) && defined(DEBUG_BUILD) */
+#endif /* defined(UNITTEST) */
 
 /*******************************************************************************
  *
