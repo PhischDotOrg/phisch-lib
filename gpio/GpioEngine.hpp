@@ -67,6 +67,10 @@ private:
     AccessT * const m_access;
 
 public:
+    using Mode_e = typename AccessT::Mode_e;
+    using Termination_e = typename AccessT::Termination_e;
+    using Function_e = typename AccessT::Function_e;
+
     /*!
      * @brief C'tor
      *
@@ -76,8 +80,6 @@ public:
      * @param p_access Pointer to actual GPIO engine implementation.
      */
     constexpr EngineT(AccessT * const p_access) : m_access(p_access) {};
-
-    ~EngineT(void) {};
 
     /*!
      * @brief Number of pins this engine instantiation can support.
@@ -173,14 +175,21 @@ public:
         return this->m_access->write(0, 0, -1);
     }
 
-    template<typename Mode_e, typename Termination_e, typename Function_e> int enable(const uint8_t p_pin, Mode_e p_mode, const Termination_e p_termination, const Function_e p_function) const {
-        return this->m_access->enable(p_pin, p_mode, p_termination, p_function);
+    void
+    enable(const uint8_t p_pin, Mode_e p_mode, const Termination_e p_termination) const {
+        this->m_access->enable(p_pin, p_mode, p_termination);
     };
 
-    int disable(const uint8_t p_pin) const {
-        return this->m_access->disable(p_pin);
+    void
+    disable(const uint8_t p_pin) const {
+        this->m_access->disable(p_pin);
     };
 
+    template<typename EngineT>
+    void
+    selectAlternateFn(const uint8_t p_pin, const EngineT &p_engine) const {
+        this->m_access->selectAlternateFn(p_pin, p_engine);
+    };
 }; /* class EngineT */
 
 typedef EngineT< > GpioEngine;

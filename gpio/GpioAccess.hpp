@@ -11,6 +11,7 @@
  *
  ******************************************************************************/
 #if !defined(GPIO_ENV)
+#error GPIO_ENV is not defined!
 #define GPIO_ENV Undefined
 #endif
 
@@ -36,8 +37,11 @@ public:
 
 #include <gpio/GpioAccessMock.hpp>
 #include <gpio/GpioAccessViaLpt.hpp>
-#include <gpio/GpioAccessViaSTM32F4.hpp>
 #include <gpio/GpioAccessVia74x595.hpp>
+
+#if defined(HAVE_STM32)
+#include <stm32/Cpu.hpp>
+#endif /* defined(HAVE_STM32) */
 
 /*******************************************************************************
  *
@@ -47,7 +51,7 @@ namespace gpio {
 typedef enum GpioAccessImpl_e {
     Undefined,
     SR74x595,
-    STM32F4,
+    STM32,
     Lpt,
     GTest
 } GpioAccessImpl_t;
@@ -58,10 +62,11 @@ template<> struct GpioAccessChoice<Undefined> {
     typedef void m_type;
 };
 
-class GpioAccessViaSTM32F4;
-template<> struct GpioAccessChoice<STM32F4> {
-    typedef GpioAccessViaSTM32F4 m_type;
+#if defined(HAVE_STM32)
+template<> struct GpioAccessChoice<STM32> {
+    typedef stm32::GpioEngine m_type;
 };
+#endif /* defined(HAVE_STM32) */
 
 #if defined(HAVE_LPT)
 template<> struct GpioAccessChoice<Lpt> {

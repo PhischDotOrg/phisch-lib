@@ -17,7 +17,7 @@ target_include_directories(${TARGET_NAME} INTERFACE
 )
 target_link_libraries(${TARGET_NAME} INTERFACE
     cmsis
-    stm32f4
+    stm32
 )
 
 #*******************************************************************************

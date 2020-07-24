@@ -11,7 +11,6 @@ message(STATUS "Building libuart at ${CMAKE_CURRENT_SOURCE_DIR}")
 #*******************************************************************************
 set(TARGET_NAME "uart")
 set(TARGET_SOURCES
-    UartAccess.cpp
     UartDevice.cpp
 )
 add_library(${TARGET_NAME} INTERFACE)
@@ -21,7 +20,7 @@ target_include_directories(${TARGET_NAME} INTERFACE
 target_link_libraries(${TARGET_NAME} INTERFACE
     cmsis
     gpio
-    stm32f4
+    stm32
     tpf
 )
 

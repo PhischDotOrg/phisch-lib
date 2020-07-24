@@ -7,7 +7,7 @@ project(phisch)
 #*******************************************************************************
 # Compile Environment
 #*******************************************************************************
-remove_definitions("-DGPIO_ENV=STM32F4")
+remove_definitions("-DGPIO_ENV=STM32")
 add_definitions("-DGPIO_ENV=GTest")
 
 add_definitions("-DUNITTEST")

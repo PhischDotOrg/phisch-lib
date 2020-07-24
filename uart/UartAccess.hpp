@@ -17,7 +17,9 @@
 #include "uart/UartAccessDarwin.hpp"
 #include "uart/UartAccessLinux.hpp"
 #include "uart/UartAccessMock.hpp"
-#include "uart/UartAccessViaSTM32F4.hpp"
+#if defined(HAVE_STM32)
+#include "stm32/Uart.hpp"
+#endif
 
 namespace uart {
 
@@ -25,7 +27,7 @@ typedef enum UartAccessImpl_e {
     Undefined,
     Darwin,
     Linux,
-    STM32F4,
+    STM32,
     GTest
 } UartAccessImpl_t;
 
@@ -45,9 +47,11 @@ template<> struct UartAccessChoice<Linux> {
     typedef UartAccessLinux m_type;
 };
 
-template<> struct UartAccessChoice<STM32F4> {
-    typedef UartAccessViaSTM32F4 m_type;
+#if defined(HAVE_STM32)
+template<> struct UartAccessChoice<STM32> {
+    typedef stm32::UartEngine m_type;
 };
+#endif
 
 template<> struct UartAccessChoice<GTest> {
     typedef UartAccessMock m_type;
@@ -60,7 +64,5 @@ struct UartAccessT {
 typedef UartAccessT::m_type UartAccess;
 
 }; /* namespace uart */
-
-#include <uart/UartAccess.cpp>
 
 #endif /* __UART_ACCESS_HPP_77b2f871_582a_4028_8515_7686d0161fbb */
