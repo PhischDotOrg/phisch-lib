@@ -26,7 +26,9 @@
 #if defined(HAVE_I2C)
 #include "spi/SpiAccessViaI2c.hpp"
 #endif /* defined(HAVE_I2C) */
-#include "spi/SpiAccessViaSTM32F4.hpp"
+#if defined(HAVE_STM32)
+#include "stm32/Spi.hpp"
+#endif
 
 namespace spi {
 
@@ -34,7 +36,7 @@ typedef enum SpiAccessImpl_e {
     Gpio,
     GTest,
     I2c,
-    STM32F4,
+    STM32,
     Undefined,
 } SpiAccessImpl_t;
 
@@ -56,9 +58,12 @@ template<> struct SpiAccessChoice<I2c> {
 };
 #endif /* defined(HAVE_I2C) */
 
-template<> struct SpiAccessChoice<STM32F4> {
-    typedef SpiAccessViaSTM32F4<true, dma::DmaChannel> m_type;
+/* FIXME */
+#if 0
+template<> struct SpiAccessChoice<STM32> {
+    typedef stm32::SpiEngine m_type;
 };
+#endif
 
 template<> struct SpiAccessChoice<Undefined> {
     typedef void m_type;
