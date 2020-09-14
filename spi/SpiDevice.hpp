@@ -9,6 +9,9 @@
 #include "spi/Spi.hpp"
 #include <stddef.h>
 #include <stdint.h>
+#include <assert.h>
+#include <errno.h>
+#include <stddef.h>
 
 namespace spi {
 
@@ -18,13 +21,28 @@ namespace spi {
 template<typename AccessT>
 class DeviceT {
 public:
-    DeviceT(AccessT * const p_access, const uint8_t p_number = 0, const spi::Mode p_mode = SpiMode0);
-    ~DeviceT();
+    DeviceT(AccessT * const p_access, const uint8_t p_number = 0, const spi::Mode p_mode = SpiMode0)
+      : m_access(p_access), m_number(p_number), m_mode(p_mode) {
 
-    int select(void) const;
-    int deselect(void) const;
+    }
 
-    ssize_t shift(const uint32_t p_bits, const uint8_t * const p_tx = NULL, uint8_t * const p_rx = NULL) const;
+    int select(void) const {
+        assert(m_access != NULL);
+        return this->m_access->select(this->m_number);
+    }
+
+    int deselect(void) const {
+        assert(m_access != NULL);
+        return this->m_access->deselect(this->m_number);
+    }
+
+    ssize_t shift(const uint32_t p_bits, const uint8_t * const p_tx = NULL, uint8_t * const p_rx = NULL) const {
+        int rc = -1;
+
+        rc = spi::ShiftHelperT< AccessT::SHIFT_MAX_BITS == 0, AccessT>::shift(this->m_access, p_bits, p_tx, p_rx, this->m_mode);
+
+        return rc;
+    }
 
 protected:
     AccessT * const m_access;
