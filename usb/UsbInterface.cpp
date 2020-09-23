@@ -137,11 +137,10 @@ UsbHidInterface::handleCtrlRequest(const UsbSetupPacket_t & p_setupPacket) {
 void
 UsbHidInterface::getDescriptor(const uint16_t p_descriptor, const size_t p_len) const {
     const UsbHidDescriptorTypeId_e  descriptorType = static_cast<UsbHidDescriptorTypeId_e>((p_descriptor >> 8) & 0xFF);
-    uint8_t                         descriptorId = p_descriptor & 0xFF;
 
     switch (descriptorType) {
     case e_HidReport:
-        assert(descriptorId == 0);
+        assert((p_descriptor & 0xFF) == 0);
         this->m_defaultCtrlPipe->write(this->m_reportDescriptor, std::min(this->m_reportDescriptorLength, p_len));
         break;
     default:
