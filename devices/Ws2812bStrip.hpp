@@ -8,22 +8,41 @@
 #include <stdint.h>
 #include <spi/SpiDevice.hpp>
 
-/*******************************************************************************
- *
- ******************************************************************************/
+/*****************************************************************************/
 namespace FastLED {
     #define DUMMY_ARG
     #include "pixeltypes.h"
     #undef DUMMY_ARG
 } /* namespace FastLED */
+/*****************************************************************************/
 
+/*****************************************************************************/
 namespace devices {
+/*****************************************************************************/
 
-/*******************************************************************************
- *
- ******************************************************************************/
-template<unsigned t_nPixels, typename SpiDeviceT = spi::SpiDevice>
-class Ws2812bStripT {
+/*****************************************************************************/
+struct Ws2812bDataNonInverted {
+    static constexpr uint8_t WS2812B_RESET  = 0x00;
+    static constexpr uint8_t WS2812B_ON     = 0x07;
+    static constexpr uint8_t WS2812B_OFF    = 0x01;
+};
+/*****************************************************************************/
+
+/*****************************************************************************/
+struct Ws2812bDataInverted {
+    static constexpr uint8_t WS2812B_RESET  = 0xFF;
+    static constexpr uint8_t WS2812B_ON     = 0x01;
+    static constexpr uint8_t WS2812B_OFF    = 0x07;
+};
+/*****************************************************************************/
+
+/*****************************************************************************/
+template<
+    unsigned t_nPixels,
+    typename SpiDeviceT = spi::SpiDevice,
+    typename Ws2812bDataT = Ws2812bDataInverted
+>
+class Ws2812bStripT : private Ws2812bDataT {
     friend class Ws2812bStripTest;
 
 public:
@@ -35,18 +54,53 @@ public:
     Ws2812bStripT(SpiDeviceT &p_spiDevice)
       : m_spiDevice(p_spiDevice) {
         for (unsigned idx = 0; idx < sizeof(this->m_spiData); idx++) {
-            this->m_spiData[idx] = WS2812B_RESET;
+            this->m_spiData[idx] = Ws2812bDataT::WS2812B_RESET;
         }
     }
 
-    ~Ws2812bStripT() {
+    void
+    setPixel(const unsigned p_number, const Rgb_t &p_data) {
+        /*
+        * The WS2812B wants the data in the following format:
+        * 
+        * MSB                          LSB  MSB                          LSB  MSB                          LSB
+        * [G7][G6][G5][G4][G3][G2][G1][G0]  [R7][R6][R5][R4][R3][R2][R1][R0]  [B7][B6][B5][B4][B3][B2][B1][B0]
+        * 
+        */
+        for (unsigned color = 0; color < this->NUMBER_OF_WS2812B_COLORS; color++) {
+            for (int bit = this->NUMBER_OF_WS2812B_BITS_PER_COLOR - 1; bit >= 0;  bit--) {
+                // Offset of the entire Pixel
+                unsigned offs = p_number * this->SPI_BYTES_PER_WS2812B_PIXEL;
 
+                // Offset of the color w/i the Pixel
+                offs += color * this->SPI_BYTES_PER_WS2812B_COLOR;
+                
+                // Offset of the bit w/i the color
+                offs += ((NUMBER_OF_WS2812B_BITS_PER_COLOR - bit) - 1) /  NUMBER_OF_WS2812B_BITS_PER_SPI_BYTE; 
+
+                // Value to be written to the SPI byte
+                const uint8_t value = (p_data.raw[color] & (1 << bit)) ? this->WS2812B_ON : this->WS2812B_OFF;
+
+                switch (bit % NUMBER_OF_WS2812B_BITS_PER_SPI_BYTE) {
+                case 0:
+                    this->m_spiData[offs] &= ~0x0F;
+                    this->m_spiData[offs] |= value;
+                    break;
+                case 1:
+                    this->m_spiData[offs] &= ~0xF0;
+                    this->m_spiData[offs] |= (value << 4);
+                    break;
+                default:
+                    assert(false);
+                }
+            }
+        }
     }
 
-    void    setPixel(const unsigned p_number, const Rgb_t &p_data);
     Rgb_t   getPixel(const unsigned p_number);
 
-    int show(void) const {
+    int
+    show(void) const {
         ssize_t len = SIZE_OF_SPI_DATA * 8;
 
         /*
@@ -57,19 +111,23 @@ public:
          */
         m_spiDevice.select();
         ssize_t actual = m_spiDevice.shift(len, this->m_spiData);
-        m_spiDevice.shift(sizeof(WS2812B_RESET) * 8, &WS2812B_RESET);
+        m_spiDevice.shift(sizeof(this->WS2812B_RESET) * 8, &this->WS2812B_RESET);
         m_spiDevice.deselect();
         return (len != actual);
+    }
+
+    void
+    shutdown(void) {
+        for (unsigned idx = 0; idx < t_nPixels; idx++) {
+            this->setPixel(idx, Rgb_t(0));
+        }
+        show();
     }
 
 public:
     SpiDeviceT &    m_spiDevice;
 
 private:
-    static const uint8_t    WS2812B_RESET;//   = 0xFF;
-    static const uint8_t    WS2812B_ON;   //   = 0x01;
-    static const uint8_t    WS2812B_OFF;  //   = 0x07;
-
     /*
      * We need to hold the data we want to push out through SPI in a static
      * buffer, so we can use DMA to shift it. The amount of space we require is
@@ -91,13 +149,10 @@ private:
 
     uint8_t m_spiData[SIZE_OF_SPI_DATA];
 };
+/*****************************************************************************/
 
-template<unsigned t_nPixels, typename SpiDeviceT> const uint8_t Ws2812bStripT<t_nPixels, SpiDeviceT>::WS2812B_RESET = 0xFF;
-template<unsigned t_nPixels, typename SpiDeviceT> const uint8_t Ws2812bStripT<t_nPixels, SpiDeviceT>::WS2812B_ON    = 0x01;
-template<unsigned t_nPixels, typename SpiDeviceT> const uint8_t Ws2812bStripT<t_nPixels, SpiDeviceT>::WS2812B_OFF   = 0x07;
-
+/*****************************************************************************/
 } /* namespace devices */
-
-#include "Ws2812bStrip.cpp"
+/*****************************************************************************/
 
 #endif /* _WS2812BSTRIP_HPP_bf8fb134_a27f_4d1a_9806_5477a515cf28 */
