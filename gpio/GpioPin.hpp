@@ -38,25 +38,6 @@ static_assert(sizeof(AnalogIn) == 1u);
 template<
     typename GpioEngineT = gpio::GpioEngine
 >
-class AlternateFnOutputT {
-public:
-    static constexpr gpio::PinPolicy::Mode_e m_mode = gpio::PinPolicy::Mode_e::e_Alternate;
-
-    template<typename EngineT>
-    static constexpr void
-    selectAlternateFn(const GpioEngineT &p_gpioEngine, unsigned p_pin, const EngineT &p_engine) {
-        p_gpioEngine.selectAlternateFn(p_pin, p_engine);
-    }
-}; /* class AnalogInputT */
-using AlternateFn = AlternateFnOutputT<>;
-
-static_assert(sizeof(AlternateFn) == 1u);
-/******************************************************************************/
-
-/******************************************************************************/
-template<
-    typename GpioEngineT = gpio::GpioEngine
->
 class DigitalInputT {
 public:
     static constexpr gpio::PinPolicy::Mode_e m_mode = gpio::PinPolicy::Mode_e::e_Input;
@@ -93,6 +74,34 @@ public:
 using DigitalOut = DigitalOutputT<>;
 
 static_assert(sizeof(DigitalOut) == 1u);
+/******************************************************************************/
+
+/******************************************************************************/
+template<
+    typename GpioEngineT = gpio::GpioEngine
+>
+class AlternateFnInputT : public DigitalOutputT<GpioEngineT> {
+public:
+    static constexpr gpio::PinPolicy::Mode_e m_mode = gpio::PinPolicy::Mode_e::e_Input;
+
+    template<typename EngineT>
+    static constexpr void
+    selectAlternateFn(const GpioEngineT & /* p_gpioEngine */, unsigned /* p_pin */, const EngineT & /* p_engine */) {
+        static_assert(sizeof(AlternateFnInputT) == 1u);
+    }
+}; /* class AnalogInputT */
+using AlternateFnInput = AlternateFnInputT<>;
+/******************************************************************************/
+
+/******************************************************************************/
+template<
+    typename GpioEngineT = gpio::GpioEngine
+>
+class AlternateFnOutputT : public AlternateFnInputT<GpioEngineT> {
+public:
+    static constexpr gpio::PinPolicy::Mode_e m_mode = gpio::PinPolicy::Mode_e::e_Alternate;
+}; /* class AnalogInputT */
+using AlternateFnOutput = AlternateFnOutputT<>;
 /******************************************************************************/
 
 /******************************************************************************/
@@ -154,8 +163,16 @@ public:
 
 using GpioPin = GenericPinT<gpio::PinPolicy::DigitalOut, gpio::PinPolicy::Termination_e::e_None, gpio::GpioEngine>;
 using DigitalOutPin  = GenericPinT<gpio::PinPolicy::DigitalOut, gpio::PinPolicy::Termination_e::e_None, gpio::GpioEngine>;
+template<
+    gpio::PinPolicy::Termination_e  TerminationT
+>
+using DigitalInPinT  = GenericPinT<gpio::PinPolicy::DigitalIn, TerminationT, gpio::GpioEngine>;
 using DigitalInPin   = GenericPinT<gpio::PinPolicy::DigitalIn, gpio::PinPolicy::Termination_e::e_None, gpio::GpioEngine>;
-using AlternateFnPin = GenericPinT<gpio::PinPolicy::AlternateFn, gpio::PinPolicy::Termination_e::e_None, gpio::GpioEngine>;
+using AlternateFnPin = GenericPinT<gpio::PinPolicy::AlternateFnOutput, gpio::PinPolicy::Termination_e::e_None, gpio::GpioEngine>;
+template<
+    gpio::PinPolicy::Termination_e  TerminationT
+>
+using AlternateFnInPinT = GenericPinT<gpio::PinPolicy::AlternateFnInput, TerminationT, gpio::GpioEngine>;
 using AnalogInputPin = GenericPinT<gpio::PinPolicy::AnalogIn, gpio::PinPolicy::Termination_e::e_None, gpio::GpioEngine>;
 
 /*
