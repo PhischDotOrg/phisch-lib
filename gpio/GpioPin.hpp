@@ -86,9 +86,9 @@ public:
 
     template<typename EngineT>
     static constexpr void
-    selectAlternateFn(const GpioEngineT &p_gpioEngine, unsigned p_pin, const EngineT &p_engine) {
+    selectAlternateFn(const GpioEngineT & /* p_gpioEngine */, unsigned /* p_pin */, const EngineT & /* p_engine */) {
         static_assert(sizeof(AlternateFnInputT) == 1u);
-        p_gpioEngine.selectAlternateFn(p_pin, p_engine);
+        // p_gpioEngine.selectAlternateFn(p_pin, p_engine);
     }
 }; /* class AnalogInputT */
 using AlternateFnInput = AlternateFnInputT<>;
