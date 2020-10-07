@@ -9,11 +9,7 @@
 #include <spi/SpiDevice.hpp>
 
 /*****************************************************************************/
-namespace FastLED {
-    #define DUMMY_ARG
-    #include "pixeltypes.h"
-    #undef DUMMY_ARG
-} /* namespace FastLED */
+#include "Pixel.hpp"
 /*****************************************************************************/
 
 /*****************************************************************************/
@@ -46,20 +42,20 @@ class Ws2812bStripT : private Ws2812bDataT {
     friend class Ws2812bStripTest;
 
 public:
-    typedef FastLED::CRGB Rgb_t;
-
     static constexpr unsigned SIZE = t_nPixels;
     static size_t size() { return SIZE; }
     
     Ws2812bStripT(SpiDeviceT &p_spiDevice)
       : m_spiDevice(p_spiDevice) {
+        static_assert(sizeof(Pixel::RGB) == 3, "Expected Pixel Size to be 3 Bytes");
+
         for (unsigned idx = 0; idx < sizeof(this->m_spiData); idx++) {
             this->m_spiData[idx] = Ws2812bDataT::WS2812B_RESET;
         }
     }
 
     void
-    setPixel(const unsigned p_number, const Rgb_t &p_data) {
+    setPixel(const unsigned p_number, const Pixel::RGB &p_data) {
         /*
         * The WS2812B wants the data in the following format:
         * 
@@ -97,7 +93,7 @@ public:
         }
     }
 
-    Rgb_t   getPixel(const unsigned p_number);
+    const Pixel &getPixel(const unsigned p_number) const;
 
     int
     show(void) const {
@@ -119,7 +115,7 @@ public:
     void
     shutdown(void) {
         for (unsigned idx = 0; idx < t_nPixels; idx++) {
-            this->setPixel(idx, Rgb_t(0));
+            this->setPixel(idx, Pixel::RGB(0));
         }
         show();
     }
