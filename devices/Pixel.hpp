@@ -131,6 +131,11 @@ struct Pixel {
 
             return *this;
         }
+ 
+        HSV &operator=(const Hue p_hue) {
+            h = static_cast<uint16_t>(p_hue);
+            return *this;
+        }
     };
 
 private:
