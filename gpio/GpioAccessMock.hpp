@@ -17,15 +17,33 @@ namespace gpio {
 /*******************************************************************************
  *
  ******************************************************************************/
-class GpioAccessMock : public GpioAccessInterface {
+class GpioAccessMock {
 public:
-    static const size_t m_width = 8;
+    enum class Mode_e {
+        e_Input, 
+        e_Output, 
+        e_Analog, 
+        e_Alternate, 
+    };
+
+    enum class Termination_e {
+        e_None,
+    };
+
+    enum class Function_e : uint32_t {
+    };
+
+    static constexpr size_t m_width = 8;
 
     MOCK_CONST_METHOD3(write, int(uint8_t p_value, uint8_t p_output, uint8_t p_mask));
     MOCK_CONST_METHOD1(read, int(uint8_t &p_vector));
+
+    MOCK_CONST_METHOD3(enable, void(unsigned, Mode_e, Termination_e));
+    MOCK_CONST_METHOD1(disable, void(unsigned));
 };
 
 } /* namespace gpio */
+
 #else /* defined(UNITTEST) */
 namespace gpio {
     class GpioAccessMock;

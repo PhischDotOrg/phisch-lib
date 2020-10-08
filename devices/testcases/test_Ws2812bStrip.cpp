@@ -73,7 +73,7 @@ TEST_F(Ws2812bStripTest, Constants) {
  *
  ******************************************************************************/
 TEST_F(Ws2812bStripTest, SizesOfDataTypes) {
-    EXPECT_EQ(3u, sizeof(Ws2812bStrip::Rgb_t));
+    EXPECT_EQ(3u, sizeof(Pixel::RGB));
     EXPECT_EQ(this->m_length * 3 * (8/2), getSizeOfSpiData());
 }
 
@@ -88,7 +88,7 @@ TEST_F(Ws2812bStripTest, SetFirstPixel) {
     const unsigned number = 0;
     const unsigned base = 12 * number;
 
-    Ws2812bStrip::Rgb_t pixel(red, green, blue);
+    Pixel::RGB pixel(red, green, blue);
 
     m_device->setPixel(number, pixel);
     

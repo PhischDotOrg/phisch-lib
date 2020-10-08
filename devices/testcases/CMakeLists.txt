@@ -13,6 +13,7 @@ set(COMPONENTS
     LedMatrixGTM2088RGB
     Sr74x595
     Ws2812bStrip
+    Pixel
 )
 
 foreach(COMPONENT IN LISTS COMPONENTS)

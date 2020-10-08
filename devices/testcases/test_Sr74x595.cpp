@@ -14,6 +14,14 @@ using ::testing::Return;
 using ::testing::Pointee;
 using ::testing::ElementsAreArray;
 
+namespace gpio {
+
+class GpioPinMock {
+
+};
+
+} /* namespace gpio */
+
 namespace devices {
 
 /*******************************************************************************

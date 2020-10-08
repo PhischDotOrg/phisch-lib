@@ -5,6 +5,10 @@
 #ifndef _SPI_HPP_ec22a57c_684b_4653_9717_d58eab215715
 #define _SPI_HPP_ec22a57c_684b_4653_9717_d58eab215715
 
+#include <cstdint>
+#include <cassert>
+#include <unistd.h> /* for ssize_t */
+
 namespace spi {
 
 enum Mode {
