@@ -21,7 +21,7 @@ public:
 };
 
 template<class UsbHwBulkInEndpointT>
-class UsbBulkInEndpointT : UsbBulkInEndpoint {
+class UsbBulkInEndpointT : public UsbBulkInEndpoint {
 private:
     UsbHwBulkInEndpointT &  m_hwEndpoint;
 
