@@ -8,11 +8,9 @@
 #include <stdint.h>
 
 #if defined(USB_DEBUG)
-#include <uart/UartDevice.hpp>
+#include <phisch/log.h>
 
-extern uart::UartDevice g_uart;
-
-#define USB_PRINTF(...)  g_uart.printf("[USB] " __VA_ARGS__)
+#define USB_PRINTF(...)  PHISCH_LOG("[USB] " __VA_ARGS__)
 #else
 #define USB_PRINTF(...)  do { } while (0)
 #endif /* defined(USB_DEBUG) */
