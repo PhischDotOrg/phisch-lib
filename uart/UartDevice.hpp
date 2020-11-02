@@ -7,6 +7,8 @@
 
 #include "uart/UartAccess.hpp"
 
+#include <cstdarg>
+
 namespace uart {
 
 /*******************************************************************************
@@ -21,6 +23,7 @@ public:
     DeviceT(AccessT * const p_access);
     ~DeviceT(void);
 
+    void vprintf(const char * const p_fmt, va_list p_args) const;
     void printf(const char * const p_fmt, ...) const;
 };
 
@@ -33,6 +36,7 @@ public:
     DeviceT(void * const /* p_access */) {};
     ~DeviceT(void) {}
 
+    void vprintf(const char * const /* p_fmt */, va_list /* p_args */) const {}
     void printf(const char * const /* p_fmt */, ...) const {};
 };
 

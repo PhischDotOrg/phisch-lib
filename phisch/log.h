@@ -6,11 +6,17 @@
 #define _PHISCH_LOG_HPP_5BE05124_F09F_4C37_8F0F_98FB828FBEC0
 
 #if !defined(NO_LOGGING)
-    #include <uart/UartDevice.hpp>
+    #if defined(__cplusplus)
+        extern "C" {
+    #endif /* defined(__cplusplus) */
 
-    extern uart::UartDevice g_uart;
+        void debug_printf(const char * const p_fmt, ...);
 
-    #define PHISCH_LOG(...)  g_uart.printf(__VA_ARGS__)
+    #if defined(__cplusplus)
+        } /* extern "C" */
+    #endif /* defined(__cplusplus) */
+
+    #define PHISCH_LOG(...)  debug_printf(__VA_ARGS__)
 #else /* defined(NO_LOGGING) */
     #define PHISCH_LOG(...)
 #endif /* defined(NO_LOGGING) */

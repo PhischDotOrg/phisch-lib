@@ -40,6 +40,14 @@ DeviceT<AccessT>::printf(const char * const p_fmt, ...) const {
 /*******************************************************************************
  *
  ******************************************************************************/
+template<typename AccessT>
+void
+DeviceT<AccessT>::vprintf(const char * const p_fmt, va_list p_args) const {
+    ::tfp_format(this->m_access, AccessT::putf, p_fmt, p_args);
+}
+/*******************************************************************************
+ *
+ ******************************************************************************/
 // template class DeviceT<uart::UartAccess>;
 
 } /* namespace uart */
