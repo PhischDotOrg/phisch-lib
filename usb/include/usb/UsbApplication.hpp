@@ -194,10 +194,6 @@ public:
 
     }
 
-    ~UsbMouseApplication() {
-
-    }
-
     enum Button_e {
         e_LeftButton    = (1 << 0),
         e_MiddleButton  = (1 << 1),
