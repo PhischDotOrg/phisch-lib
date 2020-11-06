@@ -28,6 +28,10 @@ public:
         this->enable();
     };
 
+    bool isEnabled(void) const {
+        return m_defaultCtrlPipe != nullptr;
+    }
+
     virtual void    enable(void) const = 0;
     virtual void    disable(void) const = 0;
     /*
@@ -161,7 +165,14 @@ public:
     void enable(void) const override;
     void disable(void) const override;
 
-    void handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;    
+    void handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;
+
+    void
+    writeIrq(const uint8_t * const p_data, const size_t p_length) const {
+        if (this->isEnabled()) {
+            this->m_inEndpoint.write(p_data, p_length);
+        }
+    }
 };
 
 /*******************************************************************************

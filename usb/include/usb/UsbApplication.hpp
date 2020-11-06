@@ -167,7 +167,10 @@ public:
  * @brief USB HID Application that simulates a USB Mouse.
  *
  ******************************************************************************/
-class UsbMouseApplication {
+template<
+    typename UsbConfigurationT
+>
+class UsbMouseApplicationT {
     typedef struct HidData_s {
         union {
             uint8_t     m_data;
@@ -181,16 +184,15 @@ class UsbMouseApplication {
         int8_t      m_xAxis;
         int8_t      m_yAxis;
     } __attribute__((packed)) HidData_t;
-
     static_assert(sizeof(HidData_t) == 3);
 
 private:
-    const UsbIrqInEndpoint &    m_irqInEndpoint;
+    const UsbConfigurationT &   m_usbConfiguration;
     HidData_t                   m_hidData;
 
 public:
-    constexpr UsbMouseApplication(const UsbIrqInEndpoint &p_irqInEndpoint)
-      : m_irqInEndpoint(p_irqInEndpoint), m_hidData {} {
+    constexpr UsbMouseApplicationT(const UsbConfigurationT &p_usbConfiguration)
+      : m_usbConfiguration(p_usbConfiguration), m_hidData {} {
 
     }
 
@@ -227,9 +229,7 @@ public:
 
     void
     updateHost(void) const {
-        if (m_irqInEndpoint.isEnabled()) {
-            m_irqInEndpoint.write(reinterpret_cast<const uint8_t *>(&this->m_hidData), sizeof(HidData_t));
-        }
+        m_usbConfiguration.writeIrq(reinterpret_cast<const uint8_t *>(&this->m_hidData), sizeof(HidData_t));
     }
 };
 
