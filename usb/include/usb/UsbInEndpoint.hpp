@@ -58,7 +58,6 @@ public:
     virtual void enable(void) const = 0;
     virtual void disable(void) const = 0;
     virtual void write(const uint8_t * const p_data, const size_t p_length) const = 0;
-    virtual bool isEnabled(void) const = 0;
 };
 
 template<class UsbHwIrqInEndpointT>
@@ -81,10 +80,6 @@ public:
 
     void disable(void) const override {
         this->m_hwEndpoint.disable();
-    }
-
-    bool isEnabled(void) const override {
-        return this->m_hwEndpoint.isEnabled();
     }
 
     void write(const uint8_t * const p_data, const size_t p_length) const override {
