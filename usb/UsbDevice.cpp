@@ -61,7 +61,7 @@ UsbDevice::getDescriptor(const uint16_t p_descriptor, const size_t p_len) const 
     const UsbDescriptorTypeId_t descriptorType = static_cast<UsbDescriptorTypeId_t>((p_descriptor >> 8) & 0x07);
     uint8_t                     descriptorId = p_descriptor & 0xFF;
 
-    USB_PRINTF("UsbControlPipe::%s(): descriptorType=%d, descriptorId=%d\r\n", __func__, descriptorType, descriptorId);
+    USB_PRINTF("UsbDevice::%s(): descriptorType=%d, descriptorId=%d\r\n", __func__, descriptorType, descriptorId);
 
     switch (descriptorType) {
     case UsbDescriptorTypeId_e::e_Device:
