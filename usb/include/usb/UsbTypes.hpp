@@ -20,6 +20,11 @@ namespace usb {
 typedef struct UsbDeviceDescriptor_s UsbDeviceDescriptor_t;
 typedef struct UsbDeviceQualifierDescriptor_s UsbDeviceQualifierDescriptor_t;
 
+/******************************************************************************/
+static constexpr const unsigned MAX_CTRL_PACKET_SIZE = 64;
+/******************************************************************************/
+
+
 /*******************************************************************************
  *
  ******************************************************************************/
