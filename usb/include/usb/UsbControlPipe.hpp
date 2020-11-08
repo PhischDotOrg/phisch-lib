@@ -160,21 +160,6 @@ public:
     void write(const uint8_t * const p_data, const size_t p_length) const {
         this->m_inEndpoint.write(p_data, p_length);
     }
-
-    /**
-     * @brief Write a USB String Descriptor to the Control IN Endpoint.
-     * 
-     * Uses the Control IN Endpoint #m_inEndpoint to send a USB String Descriptor to
-     * the USB Host.
-     * 
-     * @param p_string Reference to the USB String Descriptor.
-     * @param p_length Amount of Bytes to be sent.
-     * 
-     * \see CtrlInEndpoint::write
-     */
-    void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_length) const {
-        this->m_inEndpoint.writeString(p_string, p_length);
-    }
 ///@}
 };
 

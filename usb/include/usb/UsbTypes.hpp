@@ -5,7 +5,8 @@
 #ifndef _USBTYPES_HPP_6F681E9D_BBA0_4F3F_A86C_C5464EF17DB6
 #define _USBTYPES_HPP_6F681E9D_BBA0_4F3F_A86C_C5464EF17DB6
 
-#include <stdint.h>
+#include <array>
+#include <cstdint>
 
 #if defined(USB_DEBUG)
 #include <phisch/log.h>
@@ -14,6 +15,8 @@
 #else
 #define USB_PRINTF(...)  do { } while (0)
 #endif /* defined(USB_DEBUG) */
+
+#include "f1usb/src/usb_desc.hh"
 
 namespace usb {
 
@@ -245,6 +248,7 @@ private:
  *
  ******************************************************************************/
 typedef enum UsbStringDescriptorId_e {
+    e_StrDesc_Min           = 0x00,
     e_StrDesc_LanguageId    = 0x00,
     e_StrDesc_Manufacturer  = 0x01,
     e_StrDesc_Product       = 0x02,
@@ -254,93 +258,69 @@ typedef enum UsbStringDescriptorId_e {
     e_StrDesc_Max           = 0x06
 } UsbStringDescriptorId_t;
 
-/*******************************************************************************
- *
- ******************************************************************************/
-template<typename CharT>
-struct UsbStringDescriptorT {
-private:
-    static unsigned constexpr len(const CharT * const p_string) {
-        return *p_string == '\0' ? 0 : 1 + UsbStringDescriptorT<CharT>::len(p_string + 1);
-    }
+/******************************************************************************/
+using UsbStringDescriptor_t = const uint8_t * const;
 
-    UsbStringDescriptorT(void);
+static constexpr
+std::size_t
+getUsbStrLen(const std::size_t p_length) {
+    return (2 + 2 * (sizeof(uint8_t) * (p_length - 1)));
+}
 
-public:
-    const CharT * const m_string;
-    const uint8_t       m_length;
+template <typename CharT, size_t LengthT>
+constexpr
+std::array<uint8_t, getUsbStrLen(LengthT)>
+UsbStringDescriptor (const CharT (&p_str) [LengthT]) {
+    return Util::encodeMulti (
+            static_cast<uint8_t> (getUsbStrLen(LengthT)),
+            UsbDescriptorTypeId_t::e_String,
+            Util::encodeString (p_str)
+    );
+}
+/******************************************************************************/
 
-    constexpr UsbStringDescriptorT(const CharT * const p_string) : m_string(p_string), m_length(len(m_string)) { };
-} __attribute__((packed));
-
-typedef UsbStringDescriptorT<char> UsbStringDescriptor;
-typedef UsbStringDescriptor UsbStringDescriptor_t;
-
-/*******************************************************************************
- *
- ******************************************************************************/
-struct UsbLangId_s {
-    uint8_t     m_loByte;
-    uint8_t     m_hiByte;
-
-    constexpr UsbLangId_s(const uint16_t p_langId) : m_loByte(p_langId & 0xFF),
-      m_hiByte((p_langId >> 8) & 0xFF) {
-
-    }
-
-private:
-    UsbLangId_s(void);
-} __attribute__((packed));
-
-typedef struct UsbLangId_s UsbLangId_t;
+/******************************************************************************/
+using UsbLangId_t = uint16_t;
 
 static_assert(sizeof(UsbLangId_t) == 2);
+/******************************************************************************/
 
-/*******************************************************************************
- *
- ******************************************************************************/
-struct UsbLangIdStringDescriptor_s {
-private:
-    static unsigned constexpr len(const UsbLangId_t * const p_langIds) {
-        return ((p_langIds->m_hiByte == 0) && (p_langIds->m_loByte == 0)) ? 0 : 1 + len(p_langIds + 1);
-    }
-    UsbLangIdStringDescriptor_s(void);
+/******************************************************************************/
+using UsbLangIdStringDescriptor_t = const uint8_t * const;
+/******************************************************************************/
 
-public:
-    const uint8_t               m_numLanguages;
-    const UsbLangId_t * const   m_langIds;
-
-    constexpr UsbLangIdStringDescriptor_s(const UsbLangId_t * p_langIds)
-      : m_numLanguages(len(p_langIds)), m_langIds(p_langIds) {
-        
-    }
-} __attribute__((packed));
-
-typedef struct UsbLangIdStringDescriptor_s UsbLangIdStringDescriptor_t;
-
-/*******************************************************************************
- *
- ******************************************************************************/
-struct UsbStringDescriptorTable_s {
-    const UsbLangIdStringDescriptor_t   m_languageIds;
-    const UsbStringDescriptor_t         m_manufacturer;
-    const UsbStringDescriptor_t         m_product;
-    const UsbStringDescriptor_t         m_serialNumber;
-    const UsbStringDescriptor_t         m_configuration;
-    const UsbStringDescriptor_t         m_interface;
-} __attribute__((packed));
-
-typedef struct UsbStringDescriptorTable_s UsbStringDescriptorTable_t;
-
-/*******************************************************************************
- *
- ******************************************************************************/
+/******************************************************************************/
 union UsbStringDescriptors_u {
-    UsbStringDescriptorTable_t      m_stringDescriptorTable;
-    UsbStringDescriptor_t           m_stringDescriptors[e_StrDesc_Max];
-} __attribute__((packed));
+    struct UsbStringDescriptorTable_s {
+        const UsbLangIdStringDescriptor_t   m_languageIds;
+        const UsbStringDescriptor_t         m_manufacturer;
+        const UsbStringDescriptor_t         m_product;
+        const UsbStringDescriptor_t         m_serialNumber;
+        const UsbStringDescriptor_t         m_configuration;
+        const UsbStringDescriptor_t         m_interface;
+    } __attribute__((aligned(sizeof(uint32_t))))    m_strings;
+    const UsbStringDescriptor_t             m_array[e_StrDesc_Max];
 
-typedef union UsbStringDescriptors_u UsbStringDescriptors_t;
+    static_assert(sizeof(struct UsbStringDescriptorTable_s) == sizeof(m_array));
+} __attribute__((aligned(sizeof(uint32_t))));
+
+using UsbStringDescriptors_t = UsbStringDescriptors_u;
+/******************************************************************************/
+
+/******************************************************************************/
+template <size_t LengthT, typename UsbLangIdT>
+constexpr
+std::array<uint8_t, 1 + LengthT * sizeof(UsbLangIdT)>
+UsbLangIdStringDescriptor (const UsbLangIdT (&p_langIds) [LengthT]) {
+    static_assert(LengthT > 0);
+    static_assert(LengthT < 256);   /* USB "only" allows us to announce 255 Languages */
+
+    return Util::encodeMulti (
+            static_cast<uint8_t> (LengthT),
+            Util::encode(p_langIds)
+    );
+}
+/******************************************************************************/
 
 /*******************************************************************************
  * Typedefs for Setup Packet

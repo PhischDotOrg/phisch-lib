@@ -6,6 +6,7 @@
 #define _USB_BULK_IN_ENDPOINT_HPP_76D17E20_63CB_4205_82BB_AEE1A21ED510
 
 #include <usb/UsbTypes.hpp>
+#include <cassert>
 #include <cstddef>
 
 namespace usb {
@@ -27,10 +28,6 @@ private:
 
 public:
     UsbBulkInEndpointT(UsbHwBulkInEndpointT &p_hwEndpoint) : m_hwEndpoint(p_hwEndpoint) {
-
-    }
-
-    virtual ~UsbBulkInEndpointT() {
 
     }
 
@@ -57,7 +54,7 @@ public:
 
     virtual void enable(void) const = 0;
     virtual void disable(void) const = 0;
-    virtual void write(const uint8_t * const p_data, const size_t p_length) const = 0;
+    virtual void write(const uint8_t * const p_data, const size_t p_length) const = 0;    
 };
 
 template<class UsbHwIrqInEndpointT>
@@ -67,10 +64,6 @@ private:
 
 public:
     constexpr UsbIrqInEndpointT(UsbHwIrqInEndpointT &p_hwEndpoint) : m_hwEndpoint(p_hwEndpoint) {
-
-    }
-
-    virtual ~UsbIrqInEndpointT() override {
 
     }
 
@@ -93,10 +86,9 @@ public:
 class UsbCtrlInEndpoint {
 public:
             UsbCtrlInEndpoint() = default;
-    virtual ~UsbCtrlInEndpoint() {};
+    virtual ~UsbCtrlInEndpoint() = default;
 
     virtual void write(const uint8_t * const p_data, const size_t p_length) const = 0;
-    virtual void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_len) const = 0;
 };
 
 template<class UsbHwCtrlInEndpointT>
@@ -109,16 +101,8 @@ public:
 
     }
 
-    ~UsbCtrlInEndpointT() {
-
-    }
-    
     void write(const uint8_t * const p_data, const size_t p_length) const override {
         this->m_hwEndpoint.write(p_data, p_length);
-    }
-
-    void writeString(const ::usb::UsbStringDescriptor &p_string, const size_t p_len) const override {
-        this->m_hwEndpoint.writeString(p_string, p_len);
     }
 };
 

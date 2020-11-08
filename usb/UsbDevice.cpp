@@ -119,27 +119,8 @@ void
 UsbDevice::getStringDescriptor(const uint8_t p_descriptorId, const size_t p_len) const {
     UsbStringDescriptorId_t stringDescriptor = static_cast<UsbStringDescriptorId_t>(p_descriptorId);
 
-    if (p_descriptorId >= e_StrDesc_Max) {
-        goto out;
-    }
-
     switch (stringDescriptor) {
-    case e_StrDesc_LanguageId: {
-        static uint8_t  buffer[64];
-        UsbLangId_t *   cur = reinterpret_cast<UsbLangId_t *>(&buffer[2]);
-        unsigned        idx;
-
-        buffer[1] = e_String;
-
-        for (idx = 0; idx < this->m_stringDescriptors.m_stringDescriptorTable.m_languageIds.m_numLanguages; idx++, cur++) {
-            * cur = this->m_stringDescriptors.m_stringDescriptorTable.m_languageIds.m_langIds[idx];
-        }
-
-        buffer[0] = 2 + idx * sizeof(UsbLangId_t);
-
-        assert(this->m_ctrlPipe != nullptr);
-        this->m_ctrlPipe->write(buffer, std::min<unsigned>(buffer[0], p_len));
-    } break;
+    case e_StrDesc_LanguageId:
     case e_StrDesc_Manufacturer:
     case e_StrDesc_Product:
     case e_StrDesc_SerialNumber:
@@ -148,14 +129,12 @@ UsbDevice::getStringDescriptor(const uint8_t p_descriptorId, const size_t p_len)
         assert(stringDescriptor < e_StrDesc_Max);
 
         assert(this->m_ctrlPipe != nullptr);
-        this->m_ctrlPipe->writeString(this->m_stringDescriptors.m_stringDescriptors[stringDescriptor], p_len);
+        this->m_ctrlPipe->write(this->m_stringDescriptors.m_array[stringDescriptor], p_len);
         break;
-    default:
+    case e_StrDesc_Max:
+        assert(false);
         break;
     }
-
-out:
-    return;
 }
 
 /*******************************************************************************

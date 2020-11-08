@@ -23,6 +23,7 @@ target_include_directories(${TARGET_NAME} PUBLIC
 #*******************************************************************************
 # Testcases
 #*******************************************************************************
-if (GMOCK_FOUND AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/testcases)
+if (UNITTEST AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/testcases)
+    MESSAGE(STATUS "Building ${TARGET_NAME} Testcases")
     add_subdirectory(testcases)
 endif()
