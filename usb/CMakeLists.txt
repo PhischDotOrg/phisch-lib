@@ -14,7 +14,7 @@ set(TARGET_SRC
 add_library(${TARGET_NAME} ${TARGET_SRC})
 target_link_libraries(${TARGET_NAME}
     uart
-    usb-stm32f4
+    stm32
 )
 target_include_directories(${TARGET_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
