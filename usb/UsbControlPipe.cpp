@@ -57,9 +57,10 @@ UsbControlPipe::decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket) {
 
     switch (request) {
     case e_SetAddress:
-        this->m_usbDevice.setAddress(p_setupPacket.m_wValue & 0x7F);
         /* Acknowledge the setAddress() command on the Default Ctrl Endpoint */
         this->write(NULL, 0);
+
+        this->m_usbDevice.setAddress(p_setupPacket.m_wValue & 0x7F);
         break;
     case e_GetDescriptor:
         this->m_usbDevice.getDescriptor(p_setupPacket.m_wValue, p_setupPacket.m_wLength);
@@ -148,7 +149,7 @@ UsbControlPipe::setupStageComplete(const UsbSetupPacket_t &p_setupPacket) {
  * @param p_length Size of Buffer that receives the Data OUT Stage.
  ******************************************************************************/
 void
-UsbControlPipe::setDataStageBuffer(uint32_t * const p_buffer, const size_t p_length) const {
+UsbControlPipe::setDataStageBuffer(void * const p_buffer, const size_t p_length) const {
     assert(this->m_outEndpoint != nullptr);
     this->m_outEndpoint->setDataStageBuffer(p_buffer, p_length);
 }
@@ -177,6 +178,9 @@ UsbControlPipe::decodeSetupPacket(const UsbSetupPacket_t &p_setupPacket) {
         this->decodeInterfaceRequest(p_setupPacket);
         break;
     case e_Endpoint:
+        assert(p_setupPacket.m_bRequest == 0x1);
+        this->write(NULL, 0);
+        break;
     case e_Other:
     default:
         /* Not yet implemented */

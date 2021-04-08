@@ -59,7 +59,7 @@ UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) {
         assert(p_setupPacket.m_wLength == 7);
         assert(p_setupPacket.m_bmRequestType == 0x21);
 
-        this->m_defaultCtrlPipe->setDataStageBuffer(reinterpret_cast<uint32_t *>(&m_usbCdcLineCoding), sizeof(m_usbCdcLineCoding));
+        this->m_defaultCtrlPipe->setDataStageBuffer(&m_usbCdcLineCoding, sizeof(m_usbCdcLineCoding));
         break;
     default:
         assert(false);

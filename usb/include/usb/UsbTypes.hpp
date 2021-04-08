@@ -347,6 +347,21 @@ struct UsbSetupPacket_s {
 
         return ptr[p_idx];
     };
+
+    /**
+     * @brief Allows Half-Word wise Access via operator[] to Setup Packet Buffer.
+     * 
+     * This allows ::usb::stm32f4::CtrlOutEndpointViaSTM32F4::setupDataReceivedDeviceCallback to
+     * copy the received setup data into the structure.
+     * 
+     * @param p_idx Half-Word Offset within Setup Packet Buffer.
+     * @return constexpr uint16_t& Reference to Word that is stored at offset \p p_idx from Setup Packet.
+     */
+    uint16_t & getUint16(const int p_idx) {
+        uint16_t * const ptr = reinterpret_cast<uint16_t *>(this);
+
+        return ptr[p_idx];
+    };
 #endif
 } __attribute__((packed, aligned(4)));
 typedef struct UsbSetupPacket_s UsbSetupPacket_t;
