@@ -57,10 +57,11 @@ UsbControlPipe::decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket) {
 
     switch (request) {
     case e_SetAddress:
-        /* Acknowledge the setAddress() command on the Default Ctrl Endpoint */
-        this->write(NULL, 0);
-
         this->m_usbDevice.setAddress(p_setupPacket.m_wValue & 0x7F);
+        /*
+         * No ACK Status Stage here as different devices (STM32F1 vs. F4) require different handling.
+         * See the Device::setAddress() method for more comments.
+         */
         break;
     case e_GetDescriptor:
         this->m_usbDevice.getDescriptor(p_setupPacket.m_wValue, p_setupPacket.m_wLength);
