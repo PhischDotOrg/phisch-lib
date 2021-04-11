@@ -71,7 +71,7 @@ private:
     UsbHwCtrlOutEndpointT * m_hwEndpoint;
 
 public:
-    constexpr UsbCtrlOutEndpointT(UsbControlPipe &p_ctrlPipe) : UsbCtrlOutEndpoint(p_ctrlPipe) {
+    constexpr UsbCtrlOutEndpointT(UsbControlPipe &p_ctrlPipe) : UsbCtrlOutEndpoint(p_ctrlPipe), m_hwEndpoint(nullptr) {
 
     };
 
