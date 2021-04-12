@@ -1,9 +1,6 @@
 #-
 # $Copyright$
 #
-cmake_minimum_required(VERSION 2.8)
-project(phisch)
-
 get_property(GPIO_ROOT GLOBAL PROPERTY GPIO_ROOT)
 message(STATUS "Building libgpio at ${GPIO_ROOT}")
 

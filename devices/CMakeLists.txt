@@ -1,9 +1,6 @@
 #-
 # $Copyright$
 #
-cmake_minimum_required(VERSION 2.8)
-project(phisch)
-
 get_property(DEVICES_ROOT GLOBAL PROPERTY DEVICES_ROOT)
 message(STATUS "Building libdevices at ${DEVICES_ROOT}")
 

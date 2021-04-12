@@ -1,9 +1,6 @@
 #-
 # $Copyright$
 #
-cmake_minimum_required(VERSION 2.8)
-project(phisch)
-
 message(STATUS "Building libuart at ${CMAKE_CURRENT_SOURCE_DIR}")
 
 #*******************************************************************************

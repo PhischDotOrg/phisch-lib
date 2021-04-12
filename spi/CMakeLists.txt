@@ -1,9 +1,6 @@
 #-
 # $Copyright$
 #
-cmake_minimum_required(VERSION 2.8)
-project(phisch)
-
 get_property(SPI_ROOT GLOBAL PROPERTY SPI_ROOT)
 message(STATUS "Building libspi at ${SPI_ROOT}")
 
