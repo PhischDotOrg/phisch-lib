@@ -163,6 +163,10 @@ public:
 }; /* class GenericPinT */
 
 using GpioPin = GenericPinT<gpio::PinPolicy::DigitalOut, gpio::PinPolicy::Termination_e::e_None, gpio::GpioEngine>;
+template<
+    gpio::PinPolicy::Termination_e  TerminationT
+>
+using DigitalOutPinT = GenericPinT<gpio::PinPolicy::DigitalOut, TerminationT, gpio::GpioEngine>;
 using DigitalOutPin  = GenericPinT<gpio::PinPolicy::DigitalOut, gpio::PinPolicy::Termination_e::e_None, gpio::GpioEngine>;
 template<
     gpio::PinPolicy::Termination_e  TerminationT
