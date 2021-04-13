@@ -271,6 +271,12 @@ template <typename CharT, size_t LengthT>
 constexpr
 std::array<uint8_t, getUsbStrLen(LengthT)>
 UsbStringDescriptor (const CharT (&p_str) [LengthT]) {
+    /*
+     * First Byte of String is length of Descriptor in Bytes. Hence, the
+     * Length must not exceed 255 Bytes.
+     */
+    static_assert(getUsbStrLen(LengthT) < 256);
+
     return Util::encodeMulti (
             static_cast<uint8_t> (getUsbStrLen(LengthT)),
             UsbDescriptorTypeId_t::e_String,
