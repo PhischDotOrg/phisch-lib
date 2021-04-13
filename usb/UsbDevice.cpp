@@ -116,8 +116,10 @@ UsbDevice::getDescriptor(const uint16_t p_descriptor, const size_t p_len) const 
  * @param p_len Transmission Length as requested in the \c SETUP packet.
  ******************************************************************************/
 void
-UsbDevice::getStringDescriptor(const uint8_t p_descriptorId, const size_t p_len) const {
+UsbDevice::getStringDescriptor(const uint8_t p_descriptorId, const uint8_t p_len) const {
     UsbStringDescriptorId_t stringDescriptor = static_cast<UsbStringDescriptorId_t>(p_descriptorId);
+
+    uint8_t len;
 
     switch (stringDescriptor) {
     case e_StrDesc_LanguageId:
@@ -128,8 +130,21 @@ UsbDevice::getStringDescriptor(const uint8_t p_descriptorId, const size_t p_len)
     case e_StrDesc_Interface:
         assert(stringDescriptor < e_StrDesc_Max);
 
+        /*
+         * Some USB Hosts (Windows) attempt to read -1 (255) Bytes when requesting a String
+         * Descriptor; others attempt to read the length of the Descriptor first and then
+         * only request the length of the Descriptor.
+         *
+         * To prevent a Host from reading more data than available on the Device, we need
+         * to saturate the transmit length.
+         * 
+         * Unfortunately, the lenght of the Descriptor is not available here in a syntactically
+         * more sugary way. Instead, we need to extract it from the first Byte.
+         */
+        len = * this->m_stringDescriptors.m_array[stringDescriptor];
+
         assert(this->m_ctrlPipe != nullptr);
-        this->m_ctrlPipe->write(this->m_stringDescriptors.m_array[stringDescriptor], p_len);
+        this->m_ctrlPipe->write(this->m_stringDescriptors.m_array[stringDescriptor], std::min(p_len, len));
         break;
     case e_StrDesc_Max:
         assert(false);

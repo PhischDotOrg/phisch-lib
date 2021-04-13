@@ -43,7 +43,7 @@ protected:
          "E123456789abcdef" \
          "F123456789abcdef" \
          "G123456789abcdef" \
-         "H123456789abcdef"
+         "H123456789abcd"
     );
 
 public:

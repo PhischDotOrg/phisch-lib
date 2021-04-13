@@ -271,6 +271,12 @@ template <typename CharT, size_t LengthT>
 constexpr
 std::array<uint8_t, getUsbStrLen(LengthT)>
 UsbStringDescriptor (const CharT (&p_str) [LengthT]) {
+    /*
+     * First Byte of String is length of Descriptor in Bytes. Hence, the
+     * Length must not exceed 255 Bytes.
+     */
+    static_assert(getUsbStrLen(LengthT) < 256);
+
     return Util::encodeMulti (
             static_cast<uint8_t> (getUsbStrLen(LengthT)),
             UsbDescriptorTypeId_t::e_String,
@@ -344,6 +350,21 @@ struct UsbSetupPacket_s {
      */
     uint32_t &operator[](const int p_idx) {
         uint32_t * const ptr = reinterpret_cast<uint32_t *>(this);
+
+        return ptr[p_idx];
+    };
+
+    /**
+     * @brief Allows Half-Word wise Access via operator[] to Setup Packet Buffer.
+     * 
+     * This allows ::usb::stm32f4::CtrlOutEndpointViaSTM32F4::setupDataReceivedDeviceCallback to
+     * copy the received setup data into the structure.
+     * 
+     * @param p_idx Half-Word Offset within Setup Packet Buffer.
+     * @return constexpr uint16_t& Reference to Word that is stored at offset \p p_idx from Setup Packet.
+     */
+    uint16_t & getUint16(const int p_idx) {
+        uint16_t * const ptr = reinterpret_cast<uint16_t *>(this);
 
         return ptr[p_idx];
     };

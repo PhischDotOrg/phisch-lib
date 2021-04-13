@@ -129,7 +129,7 @@ public:
      * These methods form an interface to class UsbInterface.
      */
 ///@{
-    void    setDataStageBuffer(uint32_t * const p_buffer, const size_t p_length) const;
+    void    setDataStageBuffer(void * const p_buffer, const size_t p_length) const;
 ///@}
 
     /** @name Interface to UsbCtrlOutEndpoint. 

@@ -34,7 +34,7 @@ private:
     const ::usb::UsbStringDescriptors_t &       m_stringDescriptors;
     const ::usb::UsbDeviceStatus_t              m_deviceStatus;
 
-    void getStringDescriptor(const uint8_t p_descriptorId, const size_t p_len) const;
+    void getStringDescriptor(const uint8_t p_descriptorId, const uint8_t p_len) const;
 
     constexpr const void * getConfigurationDescriptor(void) const {
         assert(this->m_configurations[0] != nullptr);

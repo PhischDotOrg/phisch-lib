@@ -59,7 +59,7 @@ public:
         this->m_ctrlPipe.setupStageComplete(p_setupPacket);
     }
 
-    virtual void setDataStageBuffer(uint32_t * const p_data, const size_t p_length) const = 0;
+    virtual void setDataStageBuffer(void * const p_data, const size_t p_length) const = 0;
 };
 
 /*******************************************************************************
@@ -71,7 +71,7 @@ private:
     UsbHwCtrlOutEndpointT * m_hwEndpoint;
 
 public:
-    constexpr UsbCtrlOutEndpointT(UsbControlPipe &p_ctrlPipe) : UsbCtrlOutEndpoint(p_ctrlPipe) {
+    constexpr UsbCtrlOutEndpointT(UsbControlPipe &p_ctrlPipe) : UsbCtrlOutEndpoint(p_ctrlPipe), m_hwEndpoint(nullptr) {
 
     };
 
@@ -89,7 +89,7 @@ public:
         this->m_hwEndpoint = nullptr;
     }
 
-    void setDataStageBuffer(uint32_t * const p_data, const size_t p_length) const override {
+    void setDataStageBuffer(void * const p_data, const size_t p_length) const override {
         assert(this->m_hwEndpoint != nullptr);
         this->m_hwEndpoint->setDataStageBuffer(p_data, p_length);
     }
