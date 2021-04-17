@@ -141,7 +141,8 @@ UsbDevice::getStringDescriptor(const uint8_t p_descriptorId, const uint8_t p_len
          * Unfortunately, the lenght of the Descriptor is not available here in a syntactically
          * more sugary way. Instead, we need to extract it from the first Byte.
          */
-        len = * this->m_stringDescriptors.m_array[stringDescriptor];
+        len = this->m_stringDescriptors.m_array[stringDescriptor][0];
+        assert(len > 2);
 
         assert(this->m_ctrlPipe != nullptr);
         this->m_ctrlPipe->write(this->m_stringDescriptors.m_array[stringDescriptor], std::min(p_len, len));

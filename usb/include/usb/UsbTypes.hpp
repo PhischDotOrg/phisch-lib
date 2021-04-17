@@ -316,13 +316,14 @@ using UsbStringDescriptors_t = UsbStringDescriptors_u;
 /******************************************************************************/
 template <size_t LengthT, typename UsbLangIdT>
 constexpr
-std::array<uint8_t, 1 + LengthT * sizeof(UsbLangIdT)>
+std::array<uint8_t, 2 + LengthT * sizeof(UsbLangIdT)>
 UsbLangIdStringDescriptor (const UsbLangIdT (&p_langIds) [LengthT]) {
     static_assert(LengthT > 0);
     static_assert(LengthT < 256);   /* USB "only" allows us to announce 255 Languages */
 
     return Util::encodeMulti (
-            static_cast<uint8_t> (LengthT),
+            static_cast<uint8_t> (2 + LengthT),
+            UsbDescriptorTypeId_t::e_String,
             Util::encode(p_langIds)
     );
 }
