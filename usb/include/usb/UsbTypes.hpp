@@ -455,7 +455,7 @@ enum UsbCdcFunctionalDescriptorSubtype_e : uint8_t {
     e_UsbDec_DescrSubtype_CallMgmt              = 0x01,
     e_UsbDec_DescrSubtype_AbstractControlMgmt   = 0x02,
     e_UsbDec_DescrSubtype_Union                 = 0x06,
-    /* FIXME Add the remaining values from the spec. */
+    /* TODO Add the remaining values from the spec. */
     e_UsbDec_DescrSubtype_Invalid               = 0xff,
 };
 #if defined(__cplusplus)

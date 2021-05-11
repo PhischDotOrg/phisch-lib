@@ -5,19 +5,15 @@
 #*******************************************************************************
 # Universal Serial Bus (USB) Library
 #*******************************************************************************
-set(TARGET_NAME usb)
+set(TARGET_NAME usb-descriptors)
 set(TARGET_SRC
-    UsbControlPipe.cpp
-    UsbDevice.cpp
-    UsbInterface.cpp
-    UsbVendorInterface.cpp
+    CdcVcp.cpp
+    HidMouse.cpp
+    VendorTest.cpp
 )
 add_library(${TARGET_NAME} ${TARGET_SRC})
 target_link_libraries(${TARGET_NAME}
-    algorithm
-    usb-descriptors
-    uart
-    stm32
+    usb
 )
 target_include_directories(${TARGET_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -30,8 +26,3 @@ if (UNITTEST AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/testcases)
     MESSAGE(STATUS "Building ${TARGET_NAME} Testcases")
     add_subdirectory(testcases)
 endif()
-
-#*******************************************************************************
-# Universal Serial Bus (USB) Descriptor Library
-#*******************************************************************************
-add_subdirectory(descriptors)

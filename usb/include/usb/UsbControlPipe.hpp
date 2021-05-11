@@ -11,11 +11,57 @@
 #include <usb/UsbDevice.hpp>
 #include <usb/UsbInEndpoint.hpp>
 
-namespace usb {
+extern "C" void update_dtog_pins(void);
 
-class UsbDevice;
+/******************************************************************************/
+namespace usb {
+/******************************************************************************/
+
 class UsbConfiguration;
+class UsbOutEndpoint;
 class UsbCtrlOutEndpoint;
+
+class UsbStreamPipe {
+    /** @brief Pointer to USB OUT Endpoint. */
+    UsbOutEndpoint *m_outEndpoint;
+public:
+    UsbStreamPipe() : m_outEndpoint(nullptr) { }
+
+    void registerOutEndpoint(UsbOutEndpoint &p_outEndpoint) {
+        assert(this->m_outEndpoint == nullptr);
+        this->m_outEndpoint = &p_outEndpoint;
+    }
+
+    void unregisterOutEndpoint(void) {
+        assert(this->m_outEndpoint != nullptr);
+        this->m_outEndpoint = nullptr;
+    }
+
+    virtual void notifyReadComplete(size_t p_numBytes) = 0;
+};
+
+class UsbMessagePipe : public UsbStreamPipe {
+protected:
+    /** @brief Pointer to USB Control OUT Endpoint. */
+    UsbCtrlOutEndpoint *m_outEndpoint;
+
+public:
+    UsbMessagePipe() : m_outEndpoint(nullptr) { }
+
+    void registerCtrlOutEndpoint(UsbCtrlOutEndpoint &p_outEndpoint) {
+        assert(this->m_outEndpoint == nullptr);
+        this->m_outEndpoint = &p_outEndpoint;
+    }
+
+    void unregisterCtrlOutEndpoint(void) {
+        assert(this->m_outEndpoint != nullptr);
+        this->m_outEndpoint = nullptr;
+    }
+
+    virtual void notifySetupPacketReceived(const ::usb::UsbSetupPacket_t &p_setupPacket) = 0;
+
+    virtual void reset(void) = 0;
+};
 
 /***************************************************************************//**
  * @brief USB Default Control Pipe Handler.
@@ -25,7 +71,61 @@ class UsbCtrlOutEndpoint;
  * 
  * Declared as \c final because the destructor is not declared \c virtual .
  ******************************************************************************/
-class UsbControlPipe final {
+class UsbControlPipe final : public UsbMessagePipe, public UsbInEndpointCallback {
+    class State {
+    public:
+        enum class State_e {
+            e_Undefined     = 0,
+            e_Idle          = 1,
+            e_SetupReceived = 2,
+            e_DataIn        = 3,
+            e_StatusOut     = 4,
+            e_DataOut       = 5,
+            e_StatusIn      = 6,
+            e_Error         = 7
+        };
+
+        inline constexpr bool operator==(const State &o){ return m_currentState == o.m_currentState; }
+        inline constexpr bool operator!=(const State &o){ return !(*this == o); }
+
+        /* Setter Operation */
+        inline /* constexpr */ void operator=(const State_e &p_newState) {
+            for (unsigned idx = 0; idx < 3; idx++) {
+                PHISCH_SETPIN(1 + idx, (static_cast<uint8_t>(p_newState) & (1 << idx)) != 0);
+            }
+
+            // USB_PRINTF("UsbControlPipe: FSM [%s] -> [%s]\r\n",
+            //   to_cstr(m_currentState), to_cstr(p_newState));
+
+            m_currentState = p_newState;
+        }
+
+        /* Getter Operation */
+        explicit operator State_e (void) {
+            return m_currentState;
+        };
+
+    private:
+        State_e m_currentState;
+
+        static constexpr std::array<const char * const, 8> m_stateStr {
+            "e_Undefined",
+            "e_Idle",
+            "e_SetupReceived",
+            "e_DataIn",
+            "e_StatusOut",
+            "e_DataOut",
+            "e_StatusIn",
+            "e_Error"
+        };
+
+        static constexpr const char * to_cstr(const State_e &p_state) {
+            return m_stateStr[static_cast<unsigned>(p_state)];
+        }
+    };
+
+    using State_e = State::State_e;
+
 public:
     /**
      * @brief USB Recipient.
@@ -36,12 +136,13 @@ public:
      * "Universal Serial Bus Specification"
      * Revision 2.0 from Apr 27, 2000
      */
-    typedef enum UsbRecipient_e {
+    enum class UsbRecipient_e : uint8_t {
         e_Device        = 0x00,
         e_Interface     = 0x01,
         e_Endpoint      = 0x02,
         e_Other         = 0x03
-    } UsbRecipient_t;
+    };
+    using UsbRecipient_t = enum UsbRecipient_e;
 
     /**
      * @brief USB Request.
@@ -52,7 +153,7 @@ public:
      * "Universal Serial Bus Specification"
      * Revision 2.0 from Apr 27, 2000
      */
-    typedef enum UsbRequest_e {
+    enum class UsbRequest_e : uint8_t {
         e_GetStatus         = 0x00,
         e_ClearFeature      = 0x01,
         e_SetFeature        = 0x03,
@@ -64,13 +165,17 @@ public:
         e_GetInterface      = 0x0A,
         e_SetInterface      = 0x0B,
         e_SyncFrame         = 0x0C
-    } UsbRequest_t;
+    };
+    using UsbRequest_t = enum UsbRequest_e;
+
+    enum class Status_e {
+        e_Ok,
+        e_Error
+    };
 
 private:
     /** @brief Reference to USB Control IN Endpoint. */
     UsbCtrlInEndpoint &m_inEndpoint;
-    /** @brief Pointer to USB Control OUT Endpoint. */
-    UsbCtrlOutEndpoint *m_outEndpoint;
 
     /**
      * @brief Pointer to the USB Device Object.
@@ -86,6 +191,8 @@ private:
      */
     const UsbConfiguration * m_activeConfiguration;
 
+    State m_state;
+
     void decodeSetupPacket(const ::usb::UsbSetupPacket_t &p_setupPacket);
     void decodeDeviceRequest(const UsbSetupPacket_t &p_setupPacket);
     void decodeInterfaceRequest(const UsbSetupPacket_t &p_setupPacket) const;
@@ -98,74 +205,37 @@ public:
      * @param p_inEndpoint Reference to the USB Control IN Enpoint.
      */
     UsbControlPipe(UsbDevice &p_usbDevice, UsbCtrlInEndpoint &p_inEndpoint)
-      : m_inEndpoint(p_inEndpoint), m_outEndpoint(nullptr), m_usbDevice(p_usbDevice), m_activeConfiguration(nullptr) {
-          this->m_usbDevice.registerUsbCtrlPipe(*this);
+      : m_inEndpoint(p_inEndpoint), m_usbDevice(p_usbDevice), m_activeConfiguration(nullptr) {
+          m_usbDevice.registerUsbCtrlPipe(*this);
+          m_inEndpoint.registerEndpointCallback(*this);
     }
 
     ~UsbControlPipe() {
-        this->m_usbDevice.unregisterUsbCtrlPipe();
+        m_inEndpoint.unregisterEndpointCallback();
+        m_usbDevice.unregisterUsbCtrlPipe();
     };
 
-    /**
-     * @brief Register a Control OUT Endpoint Callback.
-     * 
-     * @param p_outEndpoint Reference to the Control OUT Endpoint.
-     */
-    void registerCtrlOutEndpoint(UsbCtrlOutEndpoint &p_outEndpoint) {
-        assert(this->m_outEndpoint == nullptr);
-        this->m_outEndpoint = &p_outEndpoint;
+    void notifyWriteComplete(size_t p_numBytes) override;
+    void notifyReadComplete(size_t p_numBytes) override;
+    void notifySetupPacketReceived(const ::usb::UsbSetupPacket_t &p_setupPacket) override;
+
+    void idle(void);
+    void statusOut(Status_e p_status);
+    template <bool isSync = false> void statusIn(Status_e p_status);
+    void dataOut(uint8_t * p_data, size_t p_length);
+    void dataIn(const uint8_t * p_data, size_t p_length);
+    void error(void);
+
+    void start(void);
+    void stop(void);
+
+    void reset(void) override {
+        idle();
     }
-
-    /** @brief Unregister a Control OUT Endpoint Callback. */
-    void unregisterCtrlOutEndpoint(void) {
-        assert(this->m_outEndpoint != nullptr);
-        this->m_outEndpoint = nullptr;
-    }
-
-    void    setupStageComplete(const ::usb::UsbSetupPacket_t &p_setupPacket);
-
-    /** @name Interface to UsbInterface. 
-     * 
-     * These methods form an interface to class UsbInterface.
-     */
-///@{
-    void    setDataStageBuffer(void * const p_buffer, const size_t p_length) const;
-///@}
-
-    /** @name Interface to UsbCtrlOutEndpoint. 
-     * 
-     * These methods form an interface to class UsbCtrlOutEndpoint.
-     */
-///@{
-    void transferComplete(const size_t p_numBytes) const;
-///@}
-
-    /** @name Control IN Write Interface.
-     * 
-     * These methods form an interface to write to the Control IN Endpoint.
-     * 
-     * Used by classes UsbDevice and UsbInterface.
-     */
-///@{
-    /**
-     * @brief Write Data to the Control IN Endpoint.
-     * 
-     * Uses the Control IN Endpoint #m_inEndpoint to send data to the USB Host.
-     * 
-     * @param p_data Pointer to Data to be sent.
-     * @param p_length Length of Data to be sent.
-     * 
-     * \see CtrlInEndpoint::write
-     */
-    void write(const uint8_t * const p_data, const size_t p_length) const {
-        this->m_inEndpoint.write(p_data, p_length);
-    }
-///@}
 };
 
-/*******************************************************************************
- *
- ******************************************************************************/
+/******************************************************************************/
 } /* namespace usb */
+/******************************************************************************/
 
 #endif /* _USB_DEFAULT_CONTROL_PIPE_HPP_FCED743E_11B7_489D_9A33_8036AB80C161 */

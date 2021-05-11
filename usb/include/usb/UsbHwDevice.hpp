@@ -26,8 +26,8 @@ public:
      * layer.
      */
     enum DeviceSpeed_e {
-        /* FIXME USB High Speed not yet supported. */
 #if 0
+        /* TODO USB High Speed not yet supported. */
         /**  @brief USB High Speed. */ 
         e_UsbHighSpeed = 0x0,
 #endif
@@ -42,7 +42,7 @@ public:
      * 
      * @param p_deviceSpeed USB Speed.
      */
-    UsbHwDevice(const DeviceSpeed_e &p_deviceSpeed) : m_deviceSpeed(p_deviceSpeed) {
+    constexpr UsbHwDevice(const DeviceSpeed_e &p_deviceSpeed) : m_deviceSpeed(p_deviceSpeed) {
         
     };
 
@@ -63,6 +63,9 @@ public:
      * @param p_address Address of the USB Device as sent by the USB Host in the _Set Address_ Control Request.
      */
     virtual void setAddress(const uint8_t p_address) const = 0;
+
+    virtual void start(void) const = 0;
+    virtual void stop(void) const = 0;
 
 protected:
     /** @brief Selected USB Device Speed. */

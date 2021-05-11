@@ -18,12 +18,12 @@ class UsbControlPipe;
  ******************************************************************************/
 class UsbInterface {
 protected:
-    const UsbControlPipe *  m_defaultCtrlPipe;
+    UsbControlPipe *  m_defaultCtrlPipe;
 
 public:
     virtual         ~UsbInterface() {};
 
-    void enable(const UsbControlPipe &p_defaultCtrlPipe) {
+    void enable(UsbControlPipe &p_defaultCtrlPipe) {
         this->m_defaultCtrlPipe = &p_defaultCtrlPipe;
         this->enable();
     };
@@ -88,46 +88,19 @@ private:
     
     UsbCdcLineCoding_t      m_usbCdcLineCoding;
 
-    UsbBulkOutEndpoint &    m_outEndpoint;
-    UsbBulkInEndpoint &     m_inEndpoint;
+    // UsbBulkOutEndpoint &    m_outEndpoint;
+    // UsbBulkInEndpoint &     m_inEndpoint;
 
 public:
-    UsbVcpInterface(UsbBulkOutEndpoint &p_outEndpoint, UsbBulkInEndpoint &p_inEndpoint)
-      : m_outEndpoint(p_outEndpoint), m_inEndpoint(p_inEndpoint) {
-    }
-
-    virtual ~UsbVcpInterface() override {
-
+    UsbVcpInterface(UsbBulkOutEndpoint & /* p_outEndpoint */, UsbBulkInEndpoint & /* p_inEndpoint */)
+    //   : m_outEndpoint(p_outEndpoint), m_inEndpoint(p_inEndpoint) {
+    {
     }
 
     void    enable(void) const override;
     void    disable(void) const override;
 
     void    handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;
-};
-
-/*******************************************************************************
- *
- ******************************************************************************/
-class UsbVendorInterface : public UsbInterface {
-private:
-    UsbBulkOutEndpoint &    m_outEndpoint;
-    UsbBulkInEndpoint &     m_inEndpoint;
-
-public:
-    UsbVendorInterface(UsbBulkOutEndpoint &p_outEndpoint, UsbBulkInEndpoint &p_inEndpoint)
-      : m_outEndpoint(p_outEndpoint), m_inEndpoint(p_inEndpoint) {
-
-    }
-
-    virtual ~UsbVendorInterface() override {
-
-    }
-
-    void enable(void) const override;
-    void disable(void) const override;
-
-    void handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) override;
 };
 
 /*******************************************************************************
@@ -170,7 +143,7 @@ public:
     void
     writeIrq(const uint8_t * const p_data, const size_t p_length) const {
         if (this->isEnabled()) {
-            this->m_inEndpoint.write(p_data, p_length);
+            this->m_inEndpoint.setupWrite(p_data, p_length);
         }
     }
 };

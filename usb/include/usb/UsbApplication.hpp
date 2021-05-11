@@ -6,6 +6,7 @@
 #define __USB_APPLICATION_HPP_2F432858_61CD_42BC_9ED8_09B633CA4237
 
 #include <usb/UsbInEndpoint.hpp>
+#include <usb/UsbOutEndpoint.hpp>
 #include <algorithm>
 #include <cstddef>
 
@@ -37,32 +38,6 @@ public:
      * @param p_numBytes Number of Bytes transferred by the Bulk OUT request.
      */
     virtual void        transferComplete(const size_t p_numBytes) = 0;
-
-    /**
-     * @brief Obtain the Bulk OUT Buffer Address.
-     * 
-     * The UsbBulkOutEndpointT class uses this interface to register the RAM
-     * Buffer that receives the Bulk OUT Data with the hardware-specific
-     * layer.
-     * 
-     * \see UsbBulkOutEndpointT::registerHwEndpoint
-     * 
-     * @return uint32_t* Pointer to RAM Buffer that holds the Bulk OUT Data.
-     */
-    virtual uint32_t *  getBufferAddress(void) = 0;
-
-    /**
-     * @brief Obtain the Bulk OUT Buffer Length.
-     * 
-     * The UsbBulkOutEndpointT class uses this interface to register the RAM
-     * Buffer that receives the Bulk OUT Data with the hardware-specific
-     * layer.
-     * 
-     * \see UsbBulkOutEndpointT::registerHwEndpoint
-     * 
-     * @return size_t Length of the RAM Buffer that holdsd the Bulk OUT Data.
-     */
-    virtual size_t      getBufferLength(void) const = 0;
 };
 
 /***************************************************************************//**
@@ -77,7 +52,7 @@ private:
     /** @brief RAM Buffer to receive Bulk OUT Data */
     uint8_t                     m_dataBuffer[nBufferSz] __attribute__((aligned(4)));
     /** @brief IN Endpoint through which the Data is sent back to the USB Host. */
-    const UsbBulkInEndpoint &   m_inEndpoint;
+    UsbBulkInEndpoint &         m_inEndpoint;
 
 public:
     /**
@@ -85,7 +60,7 @@ public:
      * 
      * @param p_inEndpoint IN Endpoint through which the Data is sent back to the USB Host.
      */
-    UsbBulkOutLoopbackApplicationT(const UsbBulkInEndpoint &p_inEndpoint)
+    UsbBulkOutLoopbackApplicationT(UsbBulkInEndpoint &p_inEndpoint)
       : m_inEndpoint(p_inEndpoint) {
 
     };
@@ -96,17 +71,8 @@ public:
     void transferComplete(const size_t p_numBytes) override {
         USB_PRINTF("UsbBulkOutLoopbackApplicationT<%d>::%s(p_numBytes=%d)\r\n", nBufferSz, __func__, p_numBytes);
 
-        this->m_inEndpoint.write(this->m_dataBuffer, std::min(p_numBytes, sizeof(this->m_dataBuffer)));
-    }
-
-    uint32_t *
-    getBufferAddress(void) override {
-        return reinterpret_cast<uint32_t *>(this->m_dataBuffer);
-    }
-
-    size_t
-    getBufferLength(void) const override {
-        return sizeof(this->m_dataBuffer);
+        assert(p_numBytes <= sizeof(this->m_dataBuffer));
+        this->m_inEndpoint.setupWrite(this->m_dataBuffer, std::min(p_numBytes, sizeof(this->m_dataBuffer)));
     }
 };
 
@@ -145,21 +111,11 @@ public:
     void transferComplete(const size_t p_numBytes) override {
         USB_PRINTF("UsbUartApplicationT::%s(p_numBytes=%d): ", __func__, p_numBytes);
 
-        assert(p_numBytes < sizeof(this->m_dataBuffer));
+        assert(p_numBytes <= sizeof(this->m_dataBuffer));
 
         for (unsigned i = 0; i < std::min(p_numBytes, sizeof(this->m_dataBuffer)); i++) {
             m_uartAccess.putf(this->m_dataBuffer.m_u8[i]);
         }
-    }
-
-    uint32_t *
-    getBufferAddress(void) override {
-        return &this->m_dataBuffer.m_u32;
-    }
-
-    size_t
-    getBufferLength(void) const override {
-        return sizeof(this->m_dataBuffer);
     }
 };
 

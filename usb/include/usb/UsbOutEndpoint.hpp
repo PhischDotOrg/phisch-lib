@@ -9,20 +9,160 @@
 #include <usb/UsbApplication.hpp>
 #include <usb/UsbTypes.hpp>
 
-#include <algorithm>
+#include <algorithm/fifocopy.hpp>
+#include <cassert>
 
-#include <assert.h>
+#include <vector>
 
 namespace usb {
 
-/*******************************************************************************
- *
- ******************************************************************************/
-class UsbCtrlOutEndpoint {
+class UsbOutEndpoint;
+
+class UsbHwOutEndpoint {
+public:
+    virtual void setData(unsigned p_dtog) const = 0;
+    virtual bool getData(void) const = 0;
+    virtual void nack(void) const = 0;
+    virtual void stall(void) const = 0;
+    virtual void enableRxPacket(void) const = 0;
+};
+
+
+/******************************************************************************/
+class UsbOutEndpoint {
+    const UsbHwOutEndpoint *m_hwEndpoint {};
 protected:
-    UsbControlPipe &    m_ctrlPipe;
+    uint8_t *               m_begin {};
+    uint8_t *               m_current {};
+    uint8_t *               m_end {};
+
+protected:
+    void
+    reset(void) {
+        /* TODO Should we notify callback about aborted / completed transfer? */
+        m_current = m_end = nullptr;
+    }
+
+    void
+    enableRxPacket(void) const {
+        assert(m_hwEndpoint != nullptr);
+        m_hwEndpoint->enableRxPacket();
+    }
+
+    virtual void handlePacketReceived(size_t p_length) = 0;
 
 public:
+    enum Pid_e {
+        e_Data0 = 0,
+        e_Data1 = 1
+    };
+
+    void setPid(Pid_e p_pid) {
+        assert(m_hwEndpoint != nullptr);
+        m_hwEndpoint->setData(p_pid);
+    }
+
+    void stall(void) const {
+        assert(m_hwEndpoint != nullptr);
+        m_hwEndpoint->stall();
+    }
+
+    void nack(void) const {
+        assert(m_hwEndpoint != nullptr);
+        m_hwEndpoint->nack();
+    }
+
+    void
+    setupRead(uint8_t * const p_buffer, const size_t p_length) {
+        assert((p_length == 0) || (p_buffer != nullptr));
+
+        assert(m_current == nullptr);
+        assert(m_current == m_end);
+
+        m_current = p_buffer;
+        m_end = m_current + p_length;
+
+        enableRxPacket();
+    }
+
+    void
+    registerHwOutEndpoint(const UsbHwOutEndpoint &p_hwEndpoint) {
+        assert(this->m_hwEndpoint == nullptr);
+        this->m_hwEndpoint = &p_hwEndpoint;
+    }
+
+    void
+    unregisterHwOutEndpoint(void) {
+        this->m_hwEndpoint = nullptr;
+    }
+
+    template<size_t FifoWidth, typename FifoItT>
+    size_t
+    handlePacketReceived(const FifoItT p_begin, const FifoItT p_end) {
+        const size_t rxBytes = stm32::copy_from_fifo<FifoWidth>(p_begin, p_end, m_current, m_end);
+
+        handlePacketReceived(rxBytes);
+
+        return rxBytes;
+    }
+};
+/******************************************************************************/
+
+/******************************************************************************/
+class UsbMessagePipe;
+
+class UsbCtrlOutEndpoint : public UsbOutEndpoint {
+    UsbMessagePipe &                                m_ctrlPipe;
+    std::array<uint8_t, sizeof(UsbSetupPacket_t)>   m_setupPacketBuffer {};
+    bool                                            m_rxZeroLengthPacket {};
+
+protected:
+    void
+    handlePacketReceived(size_t p_length) override {
+        m_current += p_length;
+        if (m_current >= m_end) {
+            const size_t totalRxLength = m_end - m_begin;
+            if (totalRxLength && (totalRxLength % 64) == 0) { /* FIXME Remove hard-coded number */
+                if (!m_rxZeroLengthPacket) {
+                    m_rxZeroLengthPacket = true;
+                    enableRxPacket();
+                } else {
+                    m_ctrlPipe.notifyReadComplete(m_current == nullptr ? 0 : m_current - m_begin);
+                    m_current = m_end = nullptr;
+                    m_rxZeroLengthPacket = false;            
+                }
+            } else {
+                m_ctrlPipe.notifyReadComplete(m_current == nullptr ? 0 : m_current - m_begin);
+                m_current = m_end = nullptr;
+            }
+        } else {
+            enableRxPacket();
+        }
+    }
+
+public:
+    void
+    reset(void) {
+        UsbOutEndpoint::reset();
+        m_ctrlPipe.reset();
+        m_setupPacketBuffer.fill(0);
+    }
+
+    void
+    enableSetupPacket(void) {
+        enableRxPacket();
+    }
+
+    template<size_t FifoWidth, typename FifoItT>
+    void
+    handleSetupPacketReceived(const FifoItT p_begin, const FifoItT p_end) {
+        const size_t numBytes = stm32::copy_from_fifo<FifoWidth>(p_begin, p_end, m_setupPacketBuffer.begin(), m_setupPacketBuffer.end());
+        assert(numBytes == sizeof(UsbSetupPacket_t));
+        (void) numBytes;
+
+        m_ctrlPipe.notifySetupPacketReceived(* reinterpret_cast<const UsbSetupPacket_t * const>(m_setupPacketBuffer.data()));
+    }
+
     UsbCtrlOutEndpoint(UsbControlPipe &p_ctrlPipe) : m_ctrlPipe(p_ctrlPipe) {
         m_ctrlPipe.registerCtrlOutEndpoint(*this);
     }
@@ -30,135 +170,27 @@ public:
     virtual ~UsbCtrlOutEndpoint() {
         m_ctrlPipe.unregisterCtrlOutEndpoint();
     }
-
-    /***************************************************************************//**
-    * @brief Handle "Transfer Complete" (="Data Stage Complete") Situation.
-    * 
-    * For a Control Endpoint, this marks the end of the Data Stage.
-    ******************************************************************************/
-    void transferComplete(const size_t p_numBytes) const {
-        this->m_ctrlPipe.transferComplete(p_numBytes);
-    }
-
-    /***************************************************************************//**
-    * @brief Handle "Setup Complete" Situation.
-    * 
-    * This method is called by the Hardware-dependent layer once the Control
-    * Endpoint has received a Setup Packet.
-    * 
-    * The method notifies the Default Control Pipe about the availablilty of 
-    * the Setup Packet and thus triggers decoding the Packet.
-    * 
-    * This marks the end of the Setup Stage.
-    * 
-    * \p p_setupPacket Setup Packet as received by the Hardware-dependant layer.
-    * 
-    * \see ::usb::stm32f4::CtrlOutEndpointViaSTM32F4::setupCompleteDeviceCallback
-    ******************************************************************************/
-    void setupComplete(const UsbSetupPacket_t &p_setupPacket) const {
-        this->m_ctrlPipe.setupStageComplete(p_setupPacket);
-    }
-
-    virtual void setDataStageBuffer(void * const p_data, const size_t p_length) const = 0;
 };
+/******************************************************************************/
 
-/*******************************************************************************
- *
- ******************************************************************************/
-template<typename UsbHwCtrlOutEndpointT>
-class UsbCtrlOutEndpointT : public UsbCtrlOutEndpoint {
-private:
-    UsbHwCtrlOutEndpointT * m_hwEndpoint;
-
-public:
-    constexpr UsbCtrlOutEndpointT(UsbControlPipe &p_ctrlPipe) : UsbCtrlOutEndpoint(p_ctrlPipe), m_hwEndpoint(nullptr) {
-
-    };
-
-    ~UsbCtrlOutEndpointT() override {
-
-    }
-
-    void registerHwEndpoint(UsbHwCtrlOutEndpointT &p_hwEndpoint) {
-        assert(this->m_hwEndpoint == nullptr);
-        this->m_hwEndpoint = &p_hwEndpoint;
-    }
-
-    void unregisterHwEndpoint() {
-        assert(this->m_hwEndpoint != nullptr);
-        this->m_hwEndpoint = nullptr;
-    }
-
-    void setDataStageBuffer(void * const p_data, const size_t p_length) const override {
-        assert(this->m_hwEndpoint != nullptr);
-        this->m_hwEndpoint->setDataStageBuffer(p_data, p_length);
-    }
-};
-
-/*******************************************************************************
- *
- ******************************************************************************/
-class UsbBulkOutEndpoint {
-public:
-    virtual void disable(void) const = 0;
-    virtual void enable(void) const = 0;
-};
-
-/*******************************************************************************
- *
- ******************************************************************************/
-template<typename UsbHwBulkOutEndpointT>
-class UsbBulkOutEndpointT : public UsbBulkOutEndpoint {
+/******************************************************************************/
+class UsbBulkOutEndpoint : public UsbOutEndpoint {
 private:
     UsbBulkOutApplication &     m_usbApplication;
-    UsbHwBulkOutEndpointT *     m_hwEndpoint;
+
+protected:
+    void handlePacketReceived(size_t /* p_length */) { /* FIXME Implement Function */ };
 
 public:
-    UsbBulkOutEndpointT(UsbBulkOutApplication &p_usbApplication)
-      : m_usbApplication(p_usbApplication), m_hwEndpoint(nullptr) {
-    }
-
-    virtual ~UsbBulkOutEndpointT() {
-    }
-
-    /**
-     * @brief Register the Hardware-specific Endpoint Handler.
-     * 
-     * @param p_hwEndpoint Reference to the Hardware-specific OUT Endpoint Handler.
-     */
-    void registerHwEndpoint(UsbHwBulkOutEndpointT &p_hwEndpoint) {
-        assert(this->m_hwEndpoint == nullptr);
-        this->m_hwEndpoint = &p_hwEndpoint;
-
-        this->m_hwEndpoint->setDataBuffer(m_usbApplication.getBufferAddress(), m_usbApplication.getBufferLength());
-    }
-
-    void unregisterHwEndpoint() {
-        assert(this->m_hwEndpoint != nullptr);
-        this->m_hwEndpoint = nullptr;
-    }
-
-    void disable(void) const override {
-        assert(this->m_hwEndpoint != nullptr);
-
-        this->m_hwEndpoint->disable();
-    }
-
-    void enable(void) const override {
-        assert(this->m_hwEndpoint != nullptr);
-
-        this->m_hwEndpoint->setup();
-        this->m_hwEndpoint->enable();
-    }
-
-    void transferComplete(const size_t p_numBytes) const {
-        this->m_usbApplication.transferComplete(p_numBytes);
+    UsbBulkOutEndpoint(UsbBulkOutApplication &p_usbApplication)
+      : m_usbApplication(p_usbApplication) {
+          (void) m_usbApplication;
     }
 };
+/******************************************************************************/
 
-/*******************************************************************************
- *
- ******************************************************************************/
+/******************************************************************************/
 } /* namespace usb */
+/******************************************************************************/
 
 #endif /* _USB_CTRL_OUT_ENDPOINT_HPP_63105854_B113_4CA9_B8B4_5E6D8464A054 */

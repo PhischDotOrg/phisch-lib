@@ -10,12 +10,11 @@
 #include <cassert>
 
 #include <usb/UsbConfiguration.hpp>
+#include <usb/UsbHwDevice.hpp>
 
 #include <initializer_list>
 
 namespace usb {
-
-    class UsbHwDevice;
 
 /*******************************************************************************
  *
@@ -75,7 +74,10 @@ public:
      * the Standard USB Device Requests.
      */
 ///@{
-    void                            setAddress(const uint8_t p_address) const;
+    void setAddress(const uint8_t p_address) const {
+        m_hwDevice.setAddress(p_address);
+    }
+
     const UsbConfiguration *        setConfiguration(const uint8_t p_configuration);
 
     constexpr uint8_t getActiveConfiguration(void) const {
@@ -98,6 +100,9 @@ public:
         assert(this->m_ctrlPipe != nullptr);
         this->m_ctrlPipe = nullptr;
     }
+
+    void start(void) const { m_hwDevice.start(); }
+    void stop(void) const {  m_hwDevice.stop(); };
 };
 
 /*******************************************************************************

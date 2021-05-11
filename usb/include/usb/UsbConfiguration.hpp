@@ -10,6 +10,8 @@
 
 #include <usb/UsbInterface.hpp>
 
+#include <phisch/log.h>
+
 namespace usb {
 
 class UsbControlPipe;
