@@ -148,14 +148,9 @@ public:
         if (m_current < m_end) {
             m_hwEndpoint.enableTxPacket();
         } else {
-            const size_t totalTxLength = m_end - m_begin;
-            if (((totalTxLength && (totalTxLength % 64) == 0)) && (m_current++ == m_end)) { /* FIXME Remove hard-coded number for Packet Size */
-                m_hwEndpoint.enableTxPacket();
-            } else {
-                assert(m_endpointCallback != nullptr);
-                m_endpointCallback->notifyWriteComplete(m_current == nullptr ? 0 : std::min(m_current, m_end) - m_begin);
-                m_current = m_end = nullptr;
-            }
+            assert(m_endpointCallback != nullptr);
+            m_endpointCallback->notifyWriteComplete(m_current == nullptr ? 0 : std::min(m_current, m_end) - m_begin);
+            m_current = m_end = nullptr;
         }
     }
 };
