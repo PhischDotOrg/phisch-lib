@@ -275,6 +275,9 @@ UsbControlPipe::statusIn(Status_e p_status) {
     }
 }
 
+/* Explicit instantiation so code can be built w/ Optimizations, i.e. Release Configuration */
+template void UsbControlPipe::statusIn<false>(Status_e p_status);
+
 void
 UsbControlPipe::error(void) {
     m_state = State_e::e_Error;
