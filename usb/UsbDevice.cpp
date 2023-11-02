@@ -11,20 +11,9 @@
 
 #include <algorithm>
 
+/******************************************************************************/
 namespace usb {
-
-/*******************************************************************************
- *
- ******************************************************************************/
-void
-UsbDevice::setAddress(const uint8_t p_address) const {
-    this->m_hwDevice.setAddress(p_address);
-}
-
-
-/*******************************************************************************
- *:
- ******************************************************************************/
+/******************************************************************************/
 const UsbConfiguration *
 UsbDevice::setConfiguration(const uint8_t p_configuration) {
     USB_PRINTF("UsbDevice::%s(): USB Configuration = %x\r\n", __func__, p_configuration);
@@ -53,22 +42,17 @@ UsbDevice::setConfiguration(const uint8_t p_configuration) {
     return newCfg;
 }
 
-/*******************************************************************************
- *
- ******************************************************************************/
 void
 UsbDevice::getDescriptor(const uint16_t p_descriptor, const size_t p_len) const {
     const UsbDescriptorTypeId_t descriptorType = static_cast<UsbDescriptorTypeId_t>((p_descriptor >> 8) & 0x07);
     uint8_t                     descriptorId = p_descriptor & 0xFF;
-
-    USB_PRINTF("UsbDevice::%s(): descriptorType=%d, descriptorId=%d\r\n", __func__, descriptorType, descriptorId);
 
     switch (descriptorType) {
     case UsbDescriptorTypeId_e::e_Device:
         assert(descriptorId == 0);
 
         assert(this->m_ctrlPipe != nullptr);
-        this->m_ctrlPipe->write(reinterpret_cast<const uint8_t *>(&this->m_deviceDescriptor), std::min(sizeof(this->m_deviceDescriptor), p_len));
+        this->m_ctrlPipe->dataIn(reinterpret_cast<const uint8_t *>(&this->m_deviceDescriptor), std::min(sizeof(this->m_deviceDescriptor), p_len));
         break;
     case UsbDescriptorTypeId_e::e_String:
         this->getStringDescriptor(descriptorId, p_len);
@@ -76,17 +60,8 @@ UsbDevice::getDescriptor(const uint16_t p_descriptor, const size_t p_len) const 
     case UsbDescriptorTypeId_e::e_Configuration:
         assert(descriptorId == 0);
 
-#if defined(USB_DEBUG)
-{
-        const void *addr = reinterpret_cast<const uint8_t *>(this->getConfigurationDescriptor());
-        size_t len = this->getConfigurationDescriptorSize();
-
-        USB_PRINTF("UsbDevice::%s(): addr=%p, len=%d, p_len=%d\r\n", __func__, addr, len, p_len);
-}
-#endif /* defined (USB_DEBUG) */
-
         assert(this->m_ctrlPipe != nullptr);
-        this->m_ctrlPipe->write(
+        this->m_ctrlPipe->dataIn(
           reinterpret_cast<const uint8_t *>(this->getConfigurationDescriptor()),
           std::min(this->getConfigurationDescriptorSize(), p_len)
         );
@@ -95,7 +70,7 @@ UsbDevice::getDescriptor(const uint16_t p_descriptor, const size_t p_len) const 
         assert(descriptorId == 0);
 
         assert(this->m_ctrlPipe != nullptr);
-        this->m_ctrlPipe->write(reinterpret_cast<const uint8_t *>(&this->m_deviceQualifierDescriptor), std::min(sizeof(this->m_deviceQualifierDescriptor), p_len));
+        this->m_ctrlPipe->dataIn(reinterpret_cast<const uint8_t *>(&this->m_deviceQualifierDescriptor), std::min(sizeof(this->m_deviceQualifierDescriptor), p_len));
         break;
     case UsbDescriptorTypeId_e::e_Interface:
     case UsbDescriptorTypeId_e::e_Endpoint:
@@ -145,7 +120,7 @@ UsbDevice::getStringDescriptor(const uint8_t p_descriptorId, const uint8_t p_len
         assert(len > 2);
 
         assert(this->m_ctrlPipe != nullptr);
-        this->m_ctrlPipe->write(this->m_stringDescriptors.m_array[stringDescriptor], std::min(p_len, len));
+        this->m_ctrlPipe->dataIn(this->m_stringDescriptors.m_array[stringDescriptor], std::min(p_len, len));
         break;
     case e_StrDesc_Max:
         assert(false);
@@ -153,7 +128,6 @@ UsbDevice::getStringDescriptor(const uint8_t p_descriptorId, const uint8_t p_len
     }
 }
 
-/*******************************************************************************
- *
- ******************************************************************************/
+/******************************************************************************/
 } /* namespace usb */
+/******************************************************************************/

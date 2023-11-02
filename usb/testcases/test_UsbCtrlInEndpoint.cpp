@@ -26,12 +26,32 @@ namespace usb {
 /******************************************************************************/
 class UsbCtrlInEndpointTest : public ::testing::Test {
 private:
+    class UsbHwInEndpointMock : public ::usb::UsbHwInEndpoint {
+    public:
+        MOCK_METHOD(void, enable, (), (const));
+        MOCK_METHOD(void, disable, (), (const));
+
+        MOCK_METHOD(void, ack, (const size_t p_length), (const));
+        MOCK_METHOD(void, stall, (), (const));
+        MOCK_METHOD(void, nack, (), (const));
+
+        MOCK_METHOD(void, registerEndpointCallback, (::usb::UsbInEndpoint &p_endpointCallout));
+        MOCK_METHOD(void, unregisterEndpointCallback, ());
+
+        MOCK_METHOD(void, setData, (unsigned p_dtog), (const));
+        MOCK_METHOD(bool, getData, (), (const));
+    };
+
     class UsbCtrlInEndpoint : public ::usb::UsbCtrlInEndpoint {
     public:
-        MOCK_METHOD(void, write, (const uint8_t * const p_data, const size_t p_length), (const, override));
+        UsbCtrlInEndpoint(::usb::UsbHwInEndpoint &p_usbHwInEndpointMock)
+          : ::usb::UsbCtrlInEndpoint(p_usbHwInEndpointMock) {
+
+        }
     };
 
 protected:
+    UsbHwInEndpointMock m_usbHwInEndpoint;
     UsbCtrlInEndpoint   m_ctrlInEndpoint;
 
     static constexpr auto m_shortStr = ::usb::UsbStringDescriptor(u"PhiSch.org");
@@ -47,7 +67,7 @@ protected:
     );
 
 public:
-    UsbCtrlInEndpointTest() {
+    UsbCtrlInEndpointTest() : m_ctrlInEndpoint(m_usbHwInEndpoint) {
 
     }
 

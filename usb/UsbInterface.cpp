@@ -17,8 +17,7 @@ namespace usb {
  ******************************************************************************/
 void
 UsbVcpInterface::enable(void) const {
-    this->m_outEndpoint.enable();
-    this->m_inEndpoint.enable();
+    /* TODO Implement Function */
 }
 
 /*******************************************************************************
@@ -26,8 +25,7 @@ UsbVcpInterface::enable(void) const {
  ******************************************************************************/
 void
 UsbVcpInterface::disable(void) const {
-    this->m_outEndpoint.disable();
-    this->m_inEndpoint.disable();
+    /* TODO Implement Function */
 }
 
 /*******************************************************************************
@@ -44,14 +42,14 @@ UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) {
         assert(p_setupPacket.m_wLength == 7);
         assert(p_setupPacket.m_bmRequestType == 0xA1);
 
-        this->m_defaultCtrlPipe->write(reinterpret_cast<const uint8_t *>(&m_usbCdcLineCoding), sizeof(struct UsbCdcLineCoding_s));
+        this->m_defaultCtrlPipe->dataIn(reinterpret_cast<const uint8_t *>(&m_usbCdcLineCoding), sizeof(struct UsbCdcLineCoding_s));
         break;
     case e_SetControlLineState:
         assert(p_setupPacket.m_bmRequestType == 0x21);
         assert(p_setupPacket.m_wIndex == 0); /* FIXME Should be same as UsbInterface::m_interfaceNo */
         assert(p_setupPacket.m_wLength == 0);
 
-        this->m_defaultCtrlPipe->write(nullptr, 0);
+        this->m_defaultCtrlPipe->statusIn(UsbControlPipe::Status_e::e_Ok);
         break;
     case e_SetLineCoding:
         assert(p_setupPacket.m_wValue == 0);
@@ -59,7 +57,7 @@ UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) {
         assert(p_setupPacket.m_wLength == 7);
         assert(p_setupPacket.m_bmRequestType == 0x21);
 
-        this->m_defaultCtrlPipe->setDataStageBuffer(&m_usbCdcLineCoding, sizeof(m_usbCdcLineCoding));
+        this->m_defaultCtrlPipe->dataOut(reinterpret_cast<uint8_t *>(&m_usbCdcLineCoding), sizeof(m_usbCdcLineCoding));
         break;
     default:
         assert(false);
@@ -70,34 +68,8 @@ UsbVcpInterface::handleCtrlRequest(const UsbSetupPacket_t &p_setupPacket) {
  *
  ******************************************************************************/
 void
-UsbVendorInterface::enable(void) const {
-    this->m_outEndpoint.enable();
-    this->m_inEndpoint.enable();
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-void
-UsbVendorInterface::disable(void) const {
-    this->m_inEndpoint.disable();
-    this->m_outEndpoint.disable();
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-void
-UsbVendorInterface::handleCtrlRequest(const UsbSetupPacket_t & /* p_setupPacket */) {
-    assert(false);
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
-void
 UsbHidInterface::enable(void) const {
-    this->m_inEndpoint.enable();
+
 }
 
 /*******************************************************************************
@@ -105,7 +77,7 @@ UsbHidInterface::enable(void) const {
  ******************************************************************************/
 void
 UsbHidInterface::disable(void) const {
-    this->m_inEndpoint.disable();
+
 }
 
 /*******************************************************************************
@@ -117,14 +89,15 @@ UsbHidInterface::handleCtrlRequest(const UsbSetupPacket_t & p_setupPacket) {
 
     switch (request) {
     case e_SetIdle:
-        this->m_defaultCtrlPipe->write(nullptr, 0);
+        /* FIXME Actually do something useful here */
+        this->m_defaultCtrlPipe->statusIn(UsbControlPipe::Status_e::e_Ok);
         break;
     case e_GetDescriptor:
         this->getDescriptor(p_setupPacket.m_wValue, p_setupPacket.m_wLength);
         break;
     case e_SetProtocol:
         /* FIXME Actually do something useful here */
-        this->m_defaultCtrlPipe->write(nullptr, 0);
+        this->m_defaultCtrlPipe->statusIn(UsbControlPipe::Status_e::e_Ok);
         break;
     default:
         assert(false);
@@ -141,7 +114,7 @@ UsbHidInterface::getDescriptor(const uint16_t p_descriptor, const size_t p_len) 
     switch (descriptorType) {
     case e_HidReport:
         assert((p_descriptor & 0xFF) == 0);
-        this->m_defaultCtrlPipe->write(this->m_reportDescriptor, std::min(this->m_reportDescriptorLength, p_len));
+        this->m_defaultCtrlPipe->dataIn(this->m_reportDescriptor, std::min(this->m_reportDescriptorLength, p_len));
         break;
     default:
         assert(false);

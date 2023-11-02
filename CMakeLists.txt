@@ -1,3 +1,4 @@
+add_subdirectory(algorithm)
 add_subdirectory(compat)
 add_subdirectory(devices)
 # add_subdirectory(dma)
